@@ -65,7 +65,8 @@ class ConnectCustomer
         $cookie->passwd = $customer->passwd;
         $cookie->email = $customer->email;
         
-        if (Configuration::get('PS_CART_FOLLOWING') && (empty($cookie->id_cart) || Cart::getNbProducts($cookie->id_cart) == 0)) {
+        if (Configuration::get('PS_CART_FOLLOWING') && (empty($cookie->id_cart) ||
+                Cart::getNbProducts($cookie->id_cart) == 0)) {
             $cookie->id_cart = (int)Cart::lastNoneOrderedCart((int)$customer->id);
         }
         
@@ -115,7 +116,7 @@ class ConnectCustomer
         secure_key = \''.$secure_key.'\', active = '.$active.',
         date_add = \''.$date_add.'\', date_upd = \''.$date_upd.'\', optin = 1 ';
         
-        //make the insert and return the last id 
+        //make the insert and return the last id
         Db::getInstance()->Execute($sql);
         $insert_id = Db::getInstance()->Insert_ID();
         
@@ -144,8 +145,8 @@ class ConnectCustomer
             $cookie->passwd = $customer->passwd;
             $cookie->email = $customer->email;
 
-            if (Configuration::get('PS_CART_FOLLOWING') 
-                    && (empty($cookie->id_cart) || 
+            if (Configuration::get('PS_CART_FOLLOWING')
+                    && (empty($cookie->id_cart) ||
                     Cart::getNbProducts($cookie->id_cart) == 0)) {
                 $cookie->id_cart = (int)Cart::lastNoneOrderedCart((int)$customer->id);
             }

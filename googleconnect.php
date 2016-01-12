@@ -24,8 +24,9 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 
-if (!defined('_PS_VERSION_')) 
+if (!defined('_PS_VERSION_')) {
   exit;
+}
 
 class GoogleConnect extends Module
 {
@@ -110,8 +111,8 @@ class GoogleConnect extends Module
             
             //array of settings
             $a_validate = array(
-                'GOOGLE_CONNECT_CLIENT_ID' => array( 
-                    $this->l('Google client ID'), 
+                'GOOGLE_CONNECT_CLIENT_ID' => array(
+                    $this->l('Google client ID'),
                     (string)Tools::getValue('GOOGLE_CONNECT_CLIENT_ID') 
                 ),
                 'GOOGLE_CONNECT_CLIENT_SECRET' => array(
@@ -125,8 +126,8 @@ class GoogleConnect extends Module
             );
             
             //vaidate post vars / settings
-            foreach($a_validate as $key => $value)
-            {    
+            foreach ($a_validate as $key => $value) {
+                
                 if (!$value[1] || empty($value[1]) || !Validate::isGenericName($value[1])) {
                     $output .= $this->displayError($this->l('Invalid Configuration value') . ' : ' . $value[0]);
                     $i_errors++;
@@ -250,8 +251,7 @@ class GoogleConnect extends Module
      */
     public function hookHeader($params)
     {   
-        //load front end assets
         $this->loadAssets();
-    	return $this->display( __FILE__, 'views/templates/front/head.tpl' );
+        return $this->display(__FILE__, 'views/templates/front/head.tpl');
     }
 }
