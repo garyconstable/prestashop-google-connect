@@ -211,7 +211,7 @@ class GoogleConnect extends Module
      */
     public function loadAssets()
     {
-        require_once __DIR__ . '/vendor/autoload.php';
+        require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/modules/googleconnect/vendor/autoload.php';
         $this->context->controller->addCSS(($this->_path).'views/css/googleconnect.css', 'all');
         $this->context->controller->addJS(($this->_path).'views/js/googleconnect.js');
     }
@@ -231,6 +231,6 @@ class GoogleConnect extends Module
     	$o_smarty = $this->context->smarty;
 		$o_cookie = $this->context->cookie;
         
-    	return $this->display(__DIR__, 'views/templates/front/head.tpl');
+    	return $this->display( __FILE__, 'views/templates/front/head.tpl' );
     }
 }

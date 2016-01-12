@@ -69,7 +69,7 @@ class connect_customer
         
         // generate passwd
         srand((double)microtime()*1000000);
-        $passwd = substr(uniqid(rand()),0,12);
+        $passwd = Tools::substr(uniqid(rand()),0,12);
         $real_passwd = $passwd; 
         $passwd = md5(pSQL(_COOKIE_KEY_.$passwd)); 
         
