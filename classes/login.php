@@ -24,7 +24,6 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 
-
 require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/modules/googleconnect/classes/connect_customer.php';
 require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/modules/googleconnect/vendor/autoload.php';
 require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') .'/config/config.inc.php';
