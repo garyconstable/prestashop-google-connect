@@ -25,7 +25,7 @@
  */
 
 if (!defined('_PS_VERSION_')) {
-  exit;
+    exit;
 }
 
 class GoogleConnect extends Module
@@ -113,7 +113,7 @@ class GoogleConnect extends Module
             $a_validate = array(
                 'GOOGLE_CONNECT_CLIENT_ID' => array(
                     $this->l('Google client ID'),
-                    (string)Tools::getValue('GOOGLE_CONNECT_CLIENT_ID') 
+                    (string)Tools::getValue('GOOGLE_CONNECT_CLIENT_ID')
                 ),
                 'GOOGLE_CONNECT_CLIENT_SECRET' => array(
                     $this->l('Google client secret'),
@@ -250,7 +250,7 @@ class GoogleConnect extends Module
      * @return type
      */
     public function hookHeader($params)
-    {   
+    {
         $this->loadAssets();
         return $this->display(__FILE__, 'views/templates/front/head.tpl');
     }
