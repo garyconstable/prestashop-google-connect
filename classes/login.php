@@ -31,7 +31,7 @@ require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') .'/init.php';
 
 
 
-class google_connect_login extends connect_customer
+class GoogleConnectLogin extends ConnectCustomer
 {
     protected $client_id;
     protected $client_secret;
@@ -72,23 +72,25 @@ class google_connect_login extends connect_customer
         $this->client = $client;
         $this->service = new Google_Service_Oauth2($this->client);
         
-        if( Tools::getValue('code') ){
+        if (Tools::getValue('code')) {
             
             $this->client->authenticate(Tools::getValue('code'));
             $this->context->cookie->__set('googleconnect_access_token', serialize($this->client->getAccessToken()) );
             Tools::redirect(filter_var($this->redirect_url, FILTER_SANITIZE_URL));
             
-        }else{
+        } else {
             
-            if( $this->context->cookie->__isset('googleconnect_access_token') ){
+            if ($this->context->cookie->__isset('googleconnect_access_token')) {
                 
                 $a_token = unserialize($this->context->cookie->__get('googleconnect_access_token'));
                 $this->client->setAccessToken($a_token['access_token']);
                 
-                if( $this->client->isAccessTokenExpired() ){
+                if ($this->client->isAccessTokenExpired()) {
+                    
                     $this->context->cookie->__unset('googleconnect_access_token');
                     $this->loginToStore();
-                }else{
+                    
+                } else {
                     $this->setAuthUrl();
                 }
                 
@@ -106,7 +108,8 @@ class google_connect_login extends connect_customer
      * set the auth url and redirect to
      * --
      */
-    public function setAuthUrl(){
+    public function setAuthUrl()
+    {
         $this->authUrl = $this->client->createAuthUrl();
         $this->redirectAuth();
     }
@@ -117,7 +120,8 @@ class google_connect_login extends connect_customer
      * redirect to google auth page
      * --
      */
-    public function redirectAuth(){
+    public function redirectAuth()
+    {
         Tools::redirect($this->authUrl);
     }
 }
