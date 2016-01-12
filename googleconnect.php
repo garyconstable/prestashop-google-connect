@@ -24,12 +24,8 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 
-if (!defined('_PS_VERSION_'))
+if (!defined('_PS_VERSION_')) 
   exit;
-
-/** 
- * timelog: 6hrs
- */
 
 class GoogleConnect extends Module
 {
@@ -44,7 +40,7 @@ class GoogleConnect extends Module
         $this->version = '1.0.0';
         $this->author = 'Gary Constable';
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_); 
+        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->bootstrap = true;
         $this->module_key = 'cbb37c9bd98b74efc65852f31e6bb2e5';
         
@@ -64,17 +60,18 @@ class GoogleConnect extends Module
      */
     public function install()
     {
-        if (Shop::isFeatureActive())
+        if (Shop::isFeatureActive()) {
             Shop::setContext(Shop::CONTEXT_ALL);
+        }
  
         if (!parent::install() ||
             !$this->registerHook('header') ||
                 !Configuration::updateValue('GOOGLE_CONNECT_CLIENT_ID', '') ||
                     !Configuration::updateValue('GOOGLE_CONNECT_CLIENT_SECRET', '') ||
-                        !Configuration::updateValue('GOOGLE_CONNECT_CALLBACK_URL', '') 
-        ){
+                        !Configuration::updateValue('GOOGLE_CONNECT_CALLBACK_URL', '')) {
             return false;
         }
+        
         return true;
     }
     
@@ -90,10 +87,10 @@ class GoogleConnect extends Module
         if (!parent::uninstall() ||
                 !Configuration::deleteByName('GOOGLE_CONNECT_CLIENT_ID') ||
                     !Configuration::deleteByName('GOOGLE_CONNECT_CLIENT_SECRET') ||
-                        !Configuration::deleteByName('GOOGLE_CONNECT_CALLBACK_URL')
-        ){
+                        !Configuration::deleteByName('GOOGLE_CONNECT_CALLBACK_URL')) {
             return false;
         }
+        
         return true;
     }
     
@@ -107,8 +104,7 @@ class GoogleConnect extends Module
     {
         $output = null;
 
-        if (Tools::isSubmit('submit'.$this->name))
-        {
+        if (Tools::isSubmit('submit'.$this->name)) {
             //error counter
             $i_errors = 0;
             
@@ -131,16 +127,16 @@ class GoogleConnect extends Module
             //vaidate post vars / settings
             foreach($a_validate as $key => $value)
             {    
-                if(!$value[1] || empty($value[1]) || !Validate::isGenericName($value[1])){
+                if (!$value[1] || empty($value[1]) || !Validate::isGenericName($value[1])) {
                     $output .= $this->displayError($this->l('Invalid Configuration value') . ' : ' . $value[0]);
                     $i_errors++;
-                }else{
+                } else {
                     Configuration::updateValue($key, $value[1]);
                 }
             }
             
             //display success message
-            if($i_errors === 0){
+            if ($i_errors === 0) {
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
         }

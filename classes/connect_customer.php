@@ -41,7 +41,7 @@ class ConnectCustomer
         $this->auth_user = $this->service->userinfo->get();
         $i_customer_id = CustomerCore::customerExists($this->auth_user->email, true);
         if ($i_customer_id) {
-            $this->login( $i_customer_id );
+            $this->login($i_customer_id);
         } else {
             $this->createAccount();
         }
@@ -85,7 +85,7 @@ class ConnectCustomer
      * --
      */
     public function createAccount()
-    {        
+    {
         //user
         $gender = 1;
         $id_default_group = (int)Configuration::get('PS_CUSTOMER_GROUP');
@@ -95,7 +95,7 @@ class ConnectCustomer
         
         // generate passwd
         srand((double)microtime()*1000000);
-        $passwd = Tools::substr(uniqid(rand()), 0,12);
+        $passwd = Tools::substr(uniqid(rand()), 0, 12);
         $real_passwd = $passwd;
         $passwd = md5(pSQL(_COOKIE_KEY_.$passwd));
         
@@ -119,21 +119,23 @@ class ConnectCustomer
         Db::getInstance()->Execute($sql);
         $insert_id = Db::getInstance()->Insert_ID();
         
-        $sql = 'INSERT into `'._DB_PREFIX_.'customer_group` SET id_customer = '.$insert_id.', id_group = '.$id_default_group.' ';
+        $sql = 'INSERT into `'._DB_PREFIX_.'customer_group` SET '
+                . 'id_customer = '.$insert_id.', id_group = '.
+                $id_default_group.' ';
         Db::getInstance()->Execute($sql);
-				
+        
         // auth customer
         $cookie = $this->context->cookie;
         $customer = new Customer();
         
         //atempt
         $authentication = $customer->getByEmail(trim($email), trim($real_passwd));
-	                       
+        
         if (!$authentication || !$customer->id) {
             
             $this->authenticationFailed();
             
-        }else{
+        } else {
             
             $cookie->id_customer = (int)$customer->id;
             $cookie->customer_lastname = $customer->lastname;
@@ -142,7 +144,9 @@ class ConnectCustomer
             $cookie->passwd = $customer->passwd;
             $cookie->email = $customer->email;
 
-            if (Configuration::get('PS_CART_FOLLOWING') && (empty($cookie->id_cart) || Cart::getNbProducts($cookie->id_cart) == 0)) {
+            if (Configuration::get('PS_CART_FOLLOWING') 
+                    && (empty($cookie->id_cart) || 
+                    Cart::getNbProducts($cookie->id_cart) == 0)) {
                 $cookie->id_cart = (int)Cart::lastNoneOrderedCart((int)$customer->id);
             }
 
@@ -192,7 +196,8 @@ class ConnectCustomer
      */
     private function authenticationFailed()
     {
-        echo '<h3>Sorry</h3><p>We could not log you in, please contact a member of customer support for more information.</p>';
+        echo '<h3>Sorry</h3><p>We could not log you in, please contact a '
+        . 'member of customer support for more information.</p>';
         die();
     }
 }

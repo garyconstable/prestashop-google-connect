@@ -29,8 +29,6 @@ require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/modules/googleconnect/ven
 require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') .'/config/config.inc.php';
 require_once rtrim($_SERVER['DOCUMENT_ROOT'], '/') .'/init.php';
 
-
-
 class GoogleConnectLogin extends ConnectCustomer
 {
     protected $client_id;
@@ -75,7 +73,7 @@ class GoogleConnectLogin extends ConnectCustomer
         if (Tools::getValue('code')) {
             
             $this->client->authenticate(Tools::getValue('code'));
-            $this->context->cookie->__set('googleconnect_access_token', serialize($this->client->getAccessToken()) );
+            $this->context->cookie->__set('googleconnect_access_token', serialize($this->client->getAccessToken()));
             Tools::redirect(filter_var($this->redirect_url, FILTER_SANITIZE_URL));
             
         } else {
