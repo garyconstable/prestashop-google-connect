@@ -124,5 +124,5 @@ class GoogleConnectLogin extends ConnectCustomer
     }
 }
 
-$o_login = new google_connect_login();
+$o_login = new GoogleConnectLogin();
 $o_login->flow();
