@@ -33,7 +33,7 @@ class connect_customer
         $cookie = $this->context->cookie;
         $customer = new Customer();
         $customer->id = $i_id_customer;
-        $cookie->id_customer = intval($customer->id);
+        $cookie->id_customer = (int)$customer->id;
         $cookie->customer_lastname = $customer->lastname;
         $cookie->customer_firstname = $customer->firstname;
         $cookie->logged = 1;
@@ -41,7 +41,7 @@ class connect_customer
         $cookie->email = $customer->email;
         
         if (Configuration::get('PS_CART_FOLLOWING') AND (empty($cookie->id_cart) OR Cart::getNbProducts($cookie->id_cart) == 0)){
-            $cookie->id_cart = intval(Cart::lastNoneOrderedCart(intval($customer->id)));
+            $cookie->id_cart = (int)Cart::lastNoneOrderedCart((int)$customer->id);
         }
         if(version_compare(_PS_VERSION_, '1.5', '>')){
             Hook::exec('actionAuthentication');
@@ -109,7 +109,7 @@ class connect_customer
             
         }else{
             
-            $cookie->id_customer = intval($customer->id);
+            $cookie->id_customer = (int)$customer->id;
             $cookie->customer_lastname = $customer->lastname;
             $cookie->customer_firstname = $customer->firstname;
             $cookie->logged = 1;
@@ -117,7 +117,7 @@ class connect_customer
             $cookie->email = $customer->email;
 
             if (Configuration::get('PS_CART_FOLLOWING') AND (empty($cookie->id_cart) OR Cart::getNbProducts($cookie->id_cart) == 0)){
-                $cookie->id_cart = intval(Cart::lastNoneOrderedCart(intval($customer->id)));
+                $cookie->id_cart = (int)Cart::lastNoneOrderedCart((int)$customer->id);
             }
 
             Hook::exec('actionAuthentication');

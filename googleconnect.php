@@ -91,15 +91,15 @@ class GoogleConnect extends Module
             $a_validate = array(
                 'GOOGLE_CONNECT_CLIENT_ID' => array( 
                     $this->l('Google client ID'), 
-                    strval(Tools::getValue('GOOGLE_CONNECT_CLIENT_ID')) 
+                    (string)Tools::getValue('GOOGLE_CONNECT_CLIENT_ID') 
                 ),
                 'GOOGLE_CONNECT_CLIENT_SECRET' => array(
                     $this->l('Google client secret'),
-                    strval(Tools::getValue('GOOGLE_CONNECT_CLIENT_SECRET'))
+                    (string)Tools::getValue('GOOGLE_CONNECT_CLIENT_SECRET')
                 ),
                 'GOOGLE_CONNECT_CALLBACK_URL' => array(
                     $this->l('Google callback url'),
-                    strval(Tools::getValue('GOOGLE_CONNECT_CALLBACK_URL'))
+                    (string)Tools::getValue('GOOGLE_CONNECT_CALLBACK_URL')
                 )
             );
             
@@ -131,6 +131,9 @@ class GoogleConnect extends Module
      */
     public function displayForm()
     {
+        //fields for the form
+        $fields_form = array();
+        
         // Get default language
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
 
@@ -228,9 +231,6 @@ class GoogleConnect extends Module
     {   
         //load front end assets
         $this->loadAssets();
-    	$o_smarty = $this->context->smarty;
-		$o_cookie = $this->context->cookie;
-        
     	return $this->display( __FILE__, 'views/templates/front/head.tpl' );
     }
 }
