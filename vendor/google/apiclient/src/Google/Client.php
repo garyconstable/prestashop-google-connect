@@ -17,7 +17,6 @@
 
 require_once 'Google/Auth/AssertionCredentials.php';
 require_once 'Google/Cache/File.php';
-require_once 'Google/Cache/Memcache.php';
 require_once 'Google/Config.php';
 require_once 'Google/Collection.php';
 require_once 'Google/Exception.php';
