@@ -15,111 +15,125 @@
  * limitations under the License.
  */
 
-use GuzzleHttp\Message\RequestInterface;
-use GuzzleHttp\Message\ResponseInterface;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ParseException;
+require_once 'Google/Client.php';
+require_once 'Google/Http/Request.php';
+require_once 'Google/Service/Exception.php';
+require_once 'Google/Utils/URITemplate.php';
 
 /**
  * This class implements the RESTful transport of apiServiceRequest()'s
+ *
+ * @author Chris Chabot <chabotc@google.com>
+ * @author Chirag Shah <chirags@google.com>
  */
 class Google_Http_REST
 {
   /**
-   * Executes a GuzzleHttp\Message\Request and (if applicable) automatically retries
-   * when errors occur.
+   * Executes a Google_Http_Request
    *
    * @param Google_Client $client
-   * @param GuzzleHttp\Message\Request $req
+   * @param Google_Http_Request $req
    * @return array decoded result
    * @throws Google_Service_Exception on server side error (ie: not authenticated,
    *  invalid or malformed post body, invalid url)
    */
-  public static function execute(
-      ClientInterface $client,
-      RequestInterface $request,
-      $config = array(),
-      $retryMap = null
-  ) {
-    $runner = new Google_Task_Runner(
-        $config,
-        sprintf('%s %s', $request->getMethod(), $request->getUrl()),
-        array(get_class(), 'doExecute'),
-        array($client, $request)
-    );
-
-    if (!is_null($retryMap)) {
-      $runner->setRetryMap($retryMap);
-    }
-
-    return $runner->run();
-  }
-
-  /**
-   * Executes a GuzzleHttp\Message\RequestInterface
-   *
-   * @param Google_Client $client
-   * @param GuzzleHttp\Message\RequestInterface $request
-   * @return array decoded result
-   * @throws Google_Service_Exception on server side error (ie: not authenticated,
-   *  invalid or malformed post body, invalid url)
-   */
-  public static function doExecute(ClientInterface $client, RequestInterface $request)
+  public static function execute(Google_Client $client, Google_Http_Request $req)
   {
-    try {
-      $response = $client->send($request);
-    } catch (RequestException $e) {
-      // if Guzzle throws an exception, catch it and handle the response
-      if (!$e->hasResponse()) {
-        throw $e;
-      }
-      $response = $e->getResponse();
-    }
-
-    return self::decodeHttpResponse($response, $request);
+    $httpRequest = $client->getIo()->makeRequest($req);
+    $httpRequest->setExpectedClass($req->getExpectedClass());
+    return self::decodeHttpResponse($httpRequest);
   }
 
   /**
    * Decode an HTTP Response.
    * @static
    * @throws Google_Service_Exception
-   * @param GuzzleHttp\Message\RequestInterface $response The http response to be decoded.
-   * @param GuzzleHttp\Message\ResponseInterface $response
+   * @param Google_Http_Request $response The http response to be decoded.
    * @return mixed|null
    */
-  public static function decodeHttpResponse(
-      ResponseInterface $response,
-      RequestInterface $request = null
-  ) {
-    $body = (string) $response->getBody();
-    $code = $response->getStatusCode();
-    $result = null;
+  public static function decodeHttpResponse($response)
+  {
+    $code = $response->getResponseHttpCode();
+    $body = $response->getResponseBody();
+    $decoded = null;
 
-    // return raw response when "alt" is "media"
-    $isJson = !($request && 'media' == $request->getQuery()->get('alt'));
-
-    // set the result to the body if it's not set to anything else
-    if ($isJson) {
-      try {
-        $result = $response->json();
-      } catch (ParseException $e) {
-        $result = $body;
-      }
-    } else {
-      $result = $body;
-    }
-
-    // retry strategy
     if ((intVal($code)) >= 300) {
+      $decoded = json_decode($body, true);
+      $err = 'Error calling ' . $response->getRequestMethod() . ' ' . $response->getUrl();
+      if (isset($decoded['error']) &&
+          isset($decoded['error']['message'])  &&
+          isset($decoded['error']['code'])) {
+        // if we're getting a json encoded error definition, use that instead of the raw response
+        // body for improved readability
+        $err .= ": ({$decoded['error']['code']}) {$decoded['error']['message']}";
+      } else {
+        $err .= ": ($code) $body";
+      }
+
       $errors = null;
       // Specific check for APIs which don't return error details, such as Blogger.
-      if (isset($result['error']) && isset($result['error']['errors'])) {
-        $errors = $result['error']['errors'];
+      if (isset($decoded['error']) && isset($decoded['error']['errors'])) {
+        $errors = $decoded['error']['errors'];
       }
-      throw new Google_Service_Exception($body, $code, null, $errors);
+
+      throw new Google_Service_Exception($err, $code, null, $errors);
     }
 
-    return $result;
+    // Only attempt to decode the response, if the response code wasn't (204) 'no content'
+    if ($code != '204') {
+      $decoded = json_decode($body, true);
+      if ($decoded === null || $decoded === "") {
+        throw new Google_Service_Exception("Invalid json in service response: $body");
+      }
+
+      if ($response->getExpectedClass()) {
+        $class = $response->getExpectedClass();
+        $decoded = new $class($decoded);
+      }
+    }
+    return $decoded;
+  }
+
+  /**
+   * Parse/expand request parameters and create a fully qualified
+   * request uri.
+   * @static
+   * @param string $servicePath
+   * @param string $restPath
+   * @param array $params
+   * @return string $requestUrl
+   */
+  public static function createRequestUri($servicePath, $restPath, $params)
+  {
+    $requestUrl = $servicePath . $restPath;
+    $uriTemplateVars = array();
+    $queryVars = array();
+    foreach ($params as $paramName => $paramSpec) {
+      if ($paramSpec['type'] == 'boolean') {
+        $paramSpec['value'] = ($paramSpec['value']) ? 'true' : 'false';
+      }
+      if ($paramSpec['location'] == 'path') {
+        $uriTemplateVars[$paramName] = $paramSpec['value'];
+      } else if ($paramSpec['location'] == 'query') {
+        if (isset($paramSpec['repeated']) && is_array($paramSpec['value'])) {
+          foreach ($paramSpec['value'] as $value) {
+            $queryVars[] = $paramName . '=' . rawurlencode($value);
+          }
+        } else {
+          $queryVars[] = $paramName . '=' . rawurlencode($paramSpec['value']);
+        }
+      }
+    }
+
+    if (count($uriTemplateVars)) {
+      $uriTemplateParser = new Google_Utils_URITemplate();
+      $requestUrl = $uriTemplateParser->parse($requestUrl, $uriTemplateVars);
+    }
+
+    if (count($queryVars)) {
+      $requestUrl .= '?' . implode($queryVars, '&');
+    }
+
+    return $requestUrl;
   }
 }

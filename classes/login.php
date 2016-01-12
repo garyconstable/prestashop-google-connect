@@ -81,9 +81,9 @@ class GoogleConnectLogin extends ConnectCustomer
             if ($this->context->cookie->__isset('googleconnect_access_token')) {
                 
                 $a_token = unserialize($this->context->cookie->__get('googleconnect_access_token'));
-                $this->client->setAccessToken($a_token['access_token']);
+                $this->client->setAccessToken($a_token);
                 
-                if ($this->client->isAccessTokenExpired()) {
+                if (!$this->client->isAccessTokenExpired()) {
                     
                     $this->context->cookie->__unset('googleconnect_access_token');
                     $this->loginToStore();

@@ -14,11 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-include_once __DIR__ . '/../vendor/autoload.php';
 include_once "templates/base.php";
-
 echo pageHeader("Simple API Access");
+
+/************************************************
+  Make a simple API request using a key. In this
+  example we're not making a request as a
+  specific user, but simply indicating that the
+  request comes from our application, and hence
+  should use our quota, which is higher than the
+  anonymous quota (which is limited per IP).
+ ************************************************/
+set_include_path("../src/" . PATH_SEPARATOR . get_include_path());
+require_once 'Google/Client.php';
+require_once 'Google/Service/Books.php';
 
 /************************************************
   We create the client and set the simple API
@@ -28,11 +37,10 @@ echo pageHeader("Simple API Access");
  ************************************************/
 $client = new Google_Client();
 $client->setApplicationName("Client_Library_Examples");
-
-// Warn if the API key isn't set.
-if (!$apiKey = getApiKey()) {
+$apiKey = "<YOUR_API_KEY>"; // Change this line.
+// Warn if the API key isn't changed.
+if ($apiKey == '<YOUR_API_KEY>') {
   echo missingApiKeyWarning();
-  exit;
 }
 $client->setDeveloperKey($apiKey);
 

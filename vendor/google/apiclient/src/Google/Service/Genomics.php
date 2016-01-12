@@ -16,15 +16,15 @@
  */
 
 /**
- * Service definition for Genomics (v1).
+ * Service definition for Genomics (v1beta).
  *
  * <p>
- * An API to store, process, explore, and share DNA sequence reads, reference-
- * based alignments, and variant calls.</p>
+ * Provides access to Genomics data.
+ * </p>
  *
  * <p>
  * For more information about this service, see the API
- * <a href="" target="_blank">Documentation</a>
+ * <a href="https://developers.google.com/genomics/v1beta/reference" target="_blank">Documentation</a>
  * </p>
  *
  * @author Google, Inc.
@@ -32,33 +32,25 @@
 class Google_Service_Genomics extends Google_Service
 {
   /** View and manage your data in Google BigQuery. */
-  const BIGQUERY =
-      "https://www.googleapis.com/auth/bigquery";
-  /** View and manage your data across Google Cloud Platform services. */
-  const CLOUD_PLATFORM =
-      "https://www.googleapis.com/auth/cloud-platform";
+  const BIGQUERY = "https://www.googleapis.com/auth/bigquery";
   /** Manage your data in Google Cloud Storage. */
-  const DEVSTORAGE_READ_WRITE =
-      "https://www.googleapis.com/auth/devstorage.read_write";
+  const DEVSTORAGE_READ_WRITE = "https://www.googleapis.com/auth/devstorage.read_write";
   /** View and manage Genomics data. */
-  const GENOMICS =
-      "https://www.googleapis.com/auth/genomics";
+  const GENOMICS = "https://www.googleapis.com/auth/genomics";
   /** View Genomics data. */
-  const GENOMICS_READONLY =
-      "https://www.googleapis.com/auth/genomics.readonly";
+  const GENOMICS_READONLY = "https://www.googleapis.com/auth/genomics.readonly";
 
+  public $beacons;
   public $callsets;
   public $datasets;
-  public $operations;
-  public $readgroupsets;
-  public $readgroupsets_coveragebuckets;
+  public $experimental_jobs;
+  public $jobs;
   public $reads;
-  public $references;
-  public $references_bases;
-  public $referencesets;
+  public $readsets;
+  public $readsets_coveragebuckets;
   public $variants;
   public $variantsets;
-
+  
 
   /**
    * Constructs the internal representation of the Genomics service.
@@ -68,11 +60,42 @@ class Google_Service_Genomics extends Google_Service
   public function __construct(Google_Client $client)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://genomics.googleapis.com/';
-    $this->servicePath = '';
-    $this->version = 'v1';
+    $this->servicePath = 'genomics/v1beta/';
+    $this->version = 'v1beta';
     $this->serviceName = 'genomics';
 
+    $this->beacons = new Google_Service_Genomics_Beacons_Resource(
+        $this,
+        $this->serviceName,
+        'beacons',
+        array(
+          'methods' => array(
+            'get' => array(
+              'path' => 'beacons/{variantSetId}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'variantSetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'allele' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'referenceName' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'position' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),
+          )
+        )
+    );
     $this->callsets = new Google_Service_Genomics_Callsets_Resource(
         $this,
         $this->serviceName,
@@ -80,11 +103,11 @@ class Google_Service_Genomics extends Google_Service
         array(
           'methods' => array(
             'create' => array(
-              'path' => 'v1/callsets',
+              'path' => 'callsets',
               'httpMethod' => 'POST',
               'parameters' => array(),
             ),'delete' => array(
-              'path' => 'v1/callsets/{callSetId}',
+              'path' => 'callsets/{callSetId}',
               'httpMethod' => 'DELETE',
               'parameters' => array(
                 'callSetId' => array(
@@ -94,7 +117,7 @@ class Google_Service_Genomics extends Google_Service
                 ),
               ),
             ),'get' => array(
-              'path' => 'v1/callsets/{callSetId}',
+              'path' => 'callsets/{callSetId}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'callSetId' => array(
@@ -104,7 +127,7 @@ class Google_Service_Genomics extends Google_Service
                 ),
               ),
             ),'patch' => array(
-              'path' => 'v1/callsets/{callSetId}',
+              'path' => 'callsets/{callSetId}',
               'httpMethod' => 'PATCH',
               'parameters' => array(
                 'callSetId' => array(
@@ -112,15 +135,21 @@ class Google_Service_Genomics extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'updateMask' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
               ),
             ),'search' => array(
-              'path' => 'v1/callsets/search',
+              'path' => 'callsets/search',
               'httpMethod' => 'POST',
               'parameters' => array(),
+            ),'update' => array(
+              'path' => 'callsets/{callSetId}',
+              'httpMethod' => 'PUT',
+              'parameters' => array(
+                'callSetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
             ),
           )
         )
@@ -132,11 +161,11 @@ class Google_Service_Genomics extends Google_Service
         array(
           'methods' => array(
             'create' => array(
-              'path' => 'v1/datasets',
+              'path' => 'datasets',
               'httpMethod' => 'POST',
               'parameters' => array(),
             ),'delete' => array(
-              'path' => 'v1/datasets/{datasetId}',
+              'path' => 'datasets/{datasetId}',
               'httpMethod' => 'DELETE',
               'parameters' => array(
                 'datasetId' => array(
@@ -146,79 +175,55 @@ class Google_Service_Genomics extends Google_Service
                 ),
               ),
             ),'get' => array(
-              'path' => 'v1/datasets/{datasetId}',
+              'path' => 'datasets/{datasetId}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'datasetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'getIamPolicy' => array(
-              'path' => 'v1/{+resource}:getIamPolicy',
-              'httpMethod' => 'POST',
-              'parameters' => array(
-                'resource' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
                 ),
               ),
             ),'list' => array(
-              'path' => 'v1/datasets',
+              'path' => 'datasets',
               'httpMethod' => 'GET',
               'parameters' => array(
-                'projectId' => array(
+                'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'pageSize' => array(
+                'maxResults' => array(
                   'location' => 'query',
-                  'type' => 'integer',
+                  'type' => 'string',
                 ),
-                'pageToken' => array(
+                'projectId' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
               ),
             ),'patch' => array(
-              'path' => 'v1/datasets/{datasetId}',
+              'path' => 'datasets/{datasetId}',
               'httpMethod' => 'PATCH',
               'parameters' => array(
                 'datasetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'updateMask' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-              ),
-            ),'setIamPolicy' => array(
-              'path' => 'v1/{+resource}:setIamPolicy',
-              'httpMethod' => 'POST',
-              'parameters' => array(
-                'resource' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'testIamPermissions' => array(
-              'path' => 'v1/{+resource}:testIamPermissions',
-              'httpMethod' => 'POST',
-              'parameters' => array(
-                'resource' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
                 ),
               ),
             ),'undelete' => array(
-              'path' => 'v1/datasets/{datasetId}:undelete',
+              'path' => 'datasets/{datasetId}/undelete',
               'httpMethod' => 'POST',
+              'parameters' => array(
+                'datasetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'update' => array(
+              'path' => 'datasets/{datasetId}',
+              'httpMethod' => 'PUT',
               'parameters' => array(
                 'datasetId' => array(
                   'location' => 'path',
@@ -230,170 +235,50 @@ class Google_Service_Genomics extends Google_Service
           )
         )
     );
-    $this->operations = new Google_Service_Genomics_Operations_Resource(
+    $this->experimental_jobs = new Google_Service_Genomics_ExperimentalJobs_Resource(
         $this,
         $this->serviceName,
-        'operations',
+        'jobs',
+        array(
+          'methods' => array(
+            'create' => array(
+              'path' => 'experimental/jobs/create',
+              'httpMethod' => 'POST',
+              'parameters' => array(),
+            ),
+          )
+        )
+    );
+    $this->jobs = new Google_Service_Genomics_Jobs_Resource(
+        $this,
+        $this->serviceName,
+        'jobs',
         array(
           'methods' => array(
             'cancel' => array(
-              'path' => 'v1/{+name}:cancel',
+              'path' => 'jobs/{jobId}/cancel',
               'httpMethod' => 'POST',
               'parameters' => array(
-                'name' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'delete' => array(
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'DELETE',
-              'parameters' => array(
-                'name' => array(
+                'jobId' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
                 ),
               ),
             ),'get' => array(
-              'path' => 'v1/{+name}',
+              'path' => 'jobs/{jobId}',
               'httpMethod' => 'GET',
               'parameters' => array(
-                'name' => array(
+                'jobId' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
-                ),
-              ),
-            ),'list' => array(
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'name' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'pageToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'pageSize' => array(
-                  'location' => 'query',
-                  'type' => 'integer',
-                ),
-              ),
-            ),
-          )
-        )
-    );
-    $this->readgroupsets = new Google_Service_Genomics_Readgroupsets_Resource(
-        $this,
-        $this->serviceName,
-        'readgroupsets',
-        array(
-          'methods' => array(
-            'delete' => array(
-              'path' => 'v1/readgroupsets/{readGroupSetId}',
-              'httpMethod' => 'DELETE',
-              'parameters' => array(
-                'readGroupSetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'export' => array(
-              'path' => 'v1/readgroupsets/{readGroupSetId}:export',
-              'httpMethod' => 'POST',
-              'parameters' => array(
-                'readGroupSetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'get' => array(
-              'path' => 'v1/readgroupsets/{readGroupSetId}',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'readGroupSetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'import' => array(
-              'path' => 'v1/readgroupsets:import',
-              'httpMethod' => 'POST',
-              'parameters' => array(),
-            ),'patch' => array(
-              'path' => 'v1/readgroupsets/{readGroupSetId}',
-              'httpMethod' => 'PATCH',
-              'parameters' => array(
-                'readGroupSetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'updateMask' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
               ),
             ),'search' => array(
-              'path' => 'v1/readgroupsets/search',
+              'path' => 'jobs/search',
               'httpMethod' => 'POST',
               'parameters' => array(),
-            ),
-          )
-        )
-    );
-    $this->readgroupsets_coveragebuckets = new Google_Service_Genomics_ReadgroupsetsCoveragebuckets_Resource(
-        $this,
-        $this->serviceName,
-        'coveragebuckets',
-        array(
-          'methods' => array(
-            'list' => array(
-              'path' => 'v1/readgroupsets/{readGroupSetId}/coveragebuckets',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'readGroupSetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'end' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'pageSize' => array(
-                  'location' => 'query',
-                  'type' => 'integer',
-                ),
-                'start' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'pageToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'targetBucketWidth' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'referenceName' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-              ),
             ),
           )
         )
@@ -405,93 +290,115 @@ class Google_Service_Genomics extends Google_Service
         array(
           'methods' => array(
             'search' => array(
-              'path' => 'v1/reads/search',
+              'path' => 'reads/search',
               'httpMethod' => 'POST',
               'parameters' => array(),
             ),
           )
         )
     );
-    $this->references = new Google_Service_Genomics_References_Resource(
+    $this->readsets = new Google_Service_Genomics_Readsets_Resource(
         $this,
         $this->serviceName,
-        'references',
+        'readsets',
         array(
           'methods' => array(
-            'get' => array(
-              'path' => 'v1/references/{referenceId}',
+            'delete' => array(
+              'path' => 'readsets/{readsetId}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'readsetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'export' => array(
+              'path' => 'readsets/export',
+              'httpMethod' => 'POST',
+              'parameters' => array(),
+            ),'get' => array(
+              'path' => 'readsets/{readsetId}',
               'httpMethod' => 'GET',
               'parameters' => array(
-                'referenceId' => array(
+                'readsetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'import' => array(
+              'path' => 'readsets/import',
+              'httpMethod' => 'POST',
+              'parameters' => array(),
+            ),'patch' => array(
+              'path' => 'readsets/{readsetId}',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'readsetId' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
                 ),
               ),
             ),'search' => array(
-              'path' => 'v1/references/search',
+              'path' => 'readsets/search',
               'httpMethod' => 'POST',
               'parameters' => array(),
-            ),
-          )
-        )
-    );
-    $this->references_bases = new Google_Service_Genomics_ReferencesBases_Resource(
-        $this,
-        $this->serviceName,
-        'bases',
-        array(
-          'methods' => array(
-            'list' => array(
-              'path' => 'v1/references/{referenceId}/bases',
-              'httpMethod' => 'GET',
+            ),'update' => array(
+              'path' => 'readsets/{readsetId}',
+              'httpMethod' => 'PUT',
               'parameters' => array(
-                'referenceId' => array(
+                'readsetId' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
                 ),
-                'start' => array(
+              ),
+            ),
+          )
+        )
+    );
+    $this->readsets_coveragebuckets = new Google_Service_Genomics_ReadsetsCoveragebuckets_Resource(
+        $this,
+        $this->serviceName,
+        'coveragebuckets',
+        array(
+          'methods' => array(
+            'list' => array(
+              'path' => 'readsets/{readsetId}/coveragebuckets',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'readsetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'range.sequenceStart' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'end' => array(
+                'maxResults' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'pageSize' => array(
+                'range.sequenceName' => array(
                   'location' => 'query',
-                  'type' => 'integer',
+                  'type' => 'string',
                 ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-              ),
-            ),
-          )
-        )
-    );
-    $this->referencesets = new Google_Service_Genomics_Referencesets_Resource(
-        $this,
-        $this->serviceName,
-        'referencesets',
-        array(
-          'methods' => array(
-            'get' => array(
-              'path' => 'v1/referencesets/{referenceSetId}',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'referenceSetId' => array(
-                  'location' => 'path',
+                'targetBucketWidth' => array(
+                  'location' => 'query',
                   'type' => 'string',
-                  'required' => true,
+                ),
+                'range.sequenceEnd' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
-            ),'search' => array(
-              'path' => 'v1/referencesets/search',
-              'httpMethod' => 'POST',
-              'parameters' => array(),
             ),
           )
         )
@@ -503,11 +410,11 @@ class Google_Service_Genomics extends Google_Service
         array(
           'methods' => array(
             'create' => array(
-              'path' => 'v1/variants',
+              'path' => 'variants',
               'httpMethod' => 'POST',
               'parameters' => array(),
             ),'delete' => array(
-              'path' => 'v1/variants/{variantId}',
+              'path' => 'variants/{variantId}',
               'httpMethod' => 'DELETE',
               'parameters' => array(
                 'variantId' => array(
@@ -516,8 +423,12 @@ class Google_Service_Genomics extends Google_Service
                   'required' => true,
                 ),
               ),
+            ),'export' => array(
+              'path' => 'variants/export',
+              'httpMethod' => 'POST',
+              'parameters' => array(),
             ),'get' => array(
-              'path' => 'v1/variants/{variantId}',
+              'path' => 'variants/{variantId}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'variantId' => array(
@@ -527,27 +438,23 @@ class Google_Service_Genomics extends Google_Service
                 ),
               ),
             ),'import' => array(
-              'path' => 'v1/variants:import',
+              'path' => 'variants/import',
               'httpMethod' => 'POST',
               'parameters' => array(),
-            ),'patch' => array(
-              'path' => 'v1/variants/{variantId}',
-              'httpMethod' => 'PATCH',
+            ),'search' => array(
+              'path' => 'variants/search',
+              'httpMethod' => 'POST',
+              'parameters' => array(),
+            ),'update' => array(
+              'path' => 'variants/{variantId}',
+              'httpMethod' => 'PUT',
               'parameters' => array(
                 'variantId' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
                 ),
-                'updateMask' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
               ),
-            ),'search' => array(
-              'path' => 'v1/variants/search',
-              'httpMethod' => 'POST',
-              'parameters' => array(),
             ),
           )
         )
@@ -558,12 +465,8 @@ class Google_Service_Genomics extends Google_Service
         'variantsets',
         array(
           'methods' => array(
-            'create' => array(
-              'path' => 'v1/variantsets',
-              'httpMethod' => 'POST',
-              'parameters' => array(),
-            ),'delete' => array(
-              'path' => 'v1/variantsets/{variantSetId}',
+            'delete' => array(
+              'path' => 'variantsets/{variantSetId}',
               'httpMethod' => 'DELETE',
               'parameters' => array(
                 'variantSetId' => array(
@@ -572,18 +475,8 @@ class Google_Service_Genomics extends Google_Service
                   'required' => true,
                 ),
               ),
-            ),'export' => array(
-              'path' => 'v1/variantsets/{variantSetId}:export',
-              'httpMethod' => 'POST',
-              'parameters' => array(
-                'variantSetId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
             ),'get' => array(
-              'path' => 'v1/variantsets/{variantSetId}',
+              'path' => 'variantsets/{variantSetId}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'variantSetId' => array(
@@ -592,22 +485,18 @@ class Google_Service_Genomics extends Google_Service
                   'required' => true,
                 ),
               ),
-            ),'patch' => array(
-              'path' => 'v1/variantsets/{variantSetId}',
-              'httpMethod' => 'PATCH',
+            ),'mergeVariants' => array(
+              'path' => 'variantsets/{variantSetId}/mergeVariants',
+              'httpMethod' => 'POST',
               'parameters' => array(
                 'variantSetId' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
                 ),
-                'updateMask' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
               ),
             ),'search' => array(
-              'path' => 'v1/variantsets/search',
+              'path' => 'variantsets/search',
               'httpMethod' => 'POST',
               'parameters' => array(),
             ),
@@ -617,6 +506,42 @@ class Google_Service_Genomics extends Google_Service
   }
 }
 
+
+/**
+ * The "beacons" collection of methods.
+ * Typical usage is:
+ *  <code>
+ *   $genomicsService = new Google_Service_Genomics(...);
+ *   $beacons = $genomicsService->beacons;
+ *  </code>
+ */
+class Google_Service_Genomics_Beacons_Resource extends Google_Service_Resource
+{
+
+  /**
+   * This is an experimental API that provides a Global Alliance for Genomics and
+   * Health Beacon. It may change at any time. (beacons.get)
+   *
+   * @param string $variantSetId
+   * The ID of the variant set to query over. It must be public. Private variant sets will return an
+    * unauthorized exception.
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param string allele
+   * Required. The allele to look for ('A', 'C', 'G' or 'T').
+   * @opt_param string referenceName
+   * Required. The reference to query over.
+   * @opt_param string position
+   * Required. The 0-based position to query.
+   * @return Google_Service_Genomics_Beacon
+   */
+  public function get($variantSetId, $optParams = array())
+  {
+    $params = array('variantSetId' => $variantSetId);
+    $params = array_merge($params, $optParams);
+    return $this->call('get', array($params), "Google_Service_Genomics_Beacon");
+  }
+}
 
 /**
  * The "callsets" collection of methods.
@@ -642,25 +567,24 @@ class Google_Service_Genomics_Callsets_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('create', array($params), "Google_Service_Genomics_CallSet");
   }
-
   /**
    * Deletes a call set. (callsets.delete)
    *
-   * @param string $callSetId The ID of the call set to be deleted.
+   * @param string $callSetId
+   * The ID of the callset to be deleted.
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Empty
    */
   public function delete($callSetId, $optParams = array())
   {
     $params = array('callSetId' => $callSetId);
     $params = array_merge($params, $optParams);
-    return $this->call('delete', array($params), "Google_Service_Genomics_Empty");
+    return $this->call('delete', array($params));
   }
-
   /**
    * Gets a call set by ID. (callsets.get)
    *
-   * @param string $callSetId The ID of the call set.
+   * @param string $callSetId
+   * The ID of the callset.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Genomics_CallSet
    */
@@ -670,17 +594,13 @@ class Google_Service_Genomics_Callsets_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('get', array($params), "Google_Service_Genomics_CallSet");
   }
-
   /**
    * Updates a call set. This method supports patch semantics. (callsets.patch)
    *
-   * @param string $callSetId The ID of the call set to be updated.
+   * @param string $callSetId
+   * The ID of the callset to be updated.
    * @param Google_CallSet $postBody
    * @param array $optParams Optional parameters.
-   *
-   * @opt_param string updateMask An optional mask specifying which fields to
-   * update. At this time, the only mutable field is name. The only acceptable
-   * value is "name". If unspecified, all mutable fields will be updated.
    * @return Google_Service_Genomics_CallSet
    */
   public function patch($callSetId, Google_Service_Genomics_CallSet $postBody, $optParams = array())
@@ -689,11 +609,8 @@ class Google_Service_Genomics_Callsets_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('patch', array($params), "Google_Service_Genomics_CallSet");
   }
-
   /**
-   * Gets a list of call sets matching the criteria. Implements [GlobalAllianceApi
-   * .searchCallSets](https://github.com/ga4gh/schemas/blob/v0.5.1/src/main/resour
-   * ces/avro/variantmethods.avdl#L178). (callsets.search)
+   * Gets a list of call sets matching the criteria. (callsets.search)
    *
    * @param Google_SearchCallSetsRequest $postBody
    * @param array $optParams Optional parameters.
@@ -704,6 +621,21 @@ class Google_Service_Genomics_Callsets_Resource extends Google_Service_Resource
     $params = array('postBody' => $postBody);
     $params = array_merge($params, $optParams);
     return $this->call('search', array($params), "Google_Service_Genomics_SearchCallSetsResponse");
+  }
+  /**
+   * Updates a call set. (callsets.update)
+   *
+   * @param string $callSetId
+   * The ID of the callset to be updated.
+   * @param Google_CallSet $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_CallSet
+   */
+  public function update($callSetId, Google_Service_Genomics_CallSet $postBody, $optParams = array())
+  {
+    $params = array('callSetId' => $callSetId, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('update', array($params), "Google_Service_Genomics_CallSet");
   }
 }
 
@@ -731,25 +663,24 @@ class Google_Service_Genomics_Datasets_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('create', array($params), "Google_Service_Genomics_Dataset");
   }
-
   /**
    * Deletes a dataset. (datasets.delete)
    *
-   * @param string $datasetId The ID of the dataset to be deleted.
+   * @param string $datasetId
+   * The ID of the dataset to be deleted.
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Empty
    */
   public function delete($datasetId, $optParams = array())
   {
     $params = array('datasetId' => $datasetId);
     $params = array_merge($params, $optParams);
-    return $this->call('delete', array($params), "Google_Service_Genomics_Empty");
+    return $this->call('delete', array($params));
   }
-
   /**
    * Gets a dataset by ID. (datasets.get)
    *
-   * @param string $datasetId The ID of the dataset.
+   * @param string $datasetId
+   * The ID of the dataset.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Genomics_Dataset
    */
@@ -759,36 +690,19 @@ class Google_Service_Genomics_Datasets_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('get', array($params), "Google_Service_Genomics_Dataset");
   }
-
   /**
-   * Gets the access control policy for the dataset. Is empty if the policy or the
-   * resource does not exist. See Getting a Policy for more information.
-   * (datasets.getIamPolicy)
-   *
-   * @param string $resource REQUIRED: The resource for which policy is being
-   * specified. Format is `datasets/`.
-   * @param Google_GetIamPolicyRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Policy
-   */
-  public function getIamPolicy($resource, Google_Service_Genomics_GetIamPolicyRequest $postBody, $optParams = array())
-  {
-    $params = array('resource' => $resource, 'postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('getIamPolicy', array($params), "Google_Service_Genomics_Policy");
-  }
-
-  /**
-   * Lists datasets within a project. (datasets.listDatasets)
+   * Lists all datasets. (datasets.listDatasets)
    *
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string projectId Required. The project to list datasets for.
-   * @opt_param int pageSize The maximum number of results returned by this
-   * request. If unspecified, defaults to 50. The maximum value is 1024.
-   * @opt_param string pageToken The continuation token, which is used to page
-   * through large result sets. To get the next page of results, set this
-   * parameter to the value of `nextPageToken` from the previous response.
+   * @opt_param string pageToken
+   * The continuation token, which is used to page through large result sets. To get the next page of
+    * results, set this parameter to the value of nextPageToken from the previous response.
+   * @opt_param string maxResults
+   * The maximum number of results returned by this request.
+   * @opt_param string projectId
+   * Only return datasets which belong to this Google Developers Console project. Only accepts
+    * project numbers.
    * @return Google_Service_Genomics_ListDatasetsResponse
    */
   public function listDatasets($optParams = array())
@@ -797,17 +711,13 @@ class Google_Service_Genomics_Datasets_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('list', array($params), "Google_Service_Genomics_ListDatasetsResponse");
   }
-
   /**
    * Updates a dataset. This method supports patch semantics. (datasets.patch)
    *
-   * @param string $datasetId The ID of the dataset to be updated.
+   * @param string $datasetId
+   * The ID of the dataset to be updated.
    * @param Google_Dataset $postBody
    * @param array $optParams Optional parameters.
-   *
-   * @opt_param string updateMask An optional mask specifying which fields to
-   * update. At this time, the only mutable field is name. The only acceptable
-   * value is "name". If unspecified, all mutable fields will be updated.
    * @return Google_Service_Genomics_Dataset
    */
   public function patch($datasetId, Google_Service_Genomics_Dataset $postBody, $optParams = array())
@@ -816,322 +726,130 @@ class Google_Service_Genomics_Datasets_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('patch', array($params), "Google_Service_Genomics_Dataset");
   }
-
-  /**
-   * Sets the access control policy on the specified dataset. Replaces any
-   * existing policy. See Setting a Policy for more information.
-   * (datasets.setIamPolicy)
-   *
-   * @param string $resource REQUIRED: The resource for which policy is being
-   * specified. Format is `datasets/`.
-   * @param Google_SetIamPolicyRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Policy
-   */
-  public function setIamPolicy($resource, Google_Service_Genomics_SetIamPolicyRequest $postBody, $optParams = array())
-  {
-    $params = array('resource' => $resource, 'postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('setIamPolicy', array($params), "Google_Service_Genomics_Policy");
-  }
-
-  /**
-   * Returns permissions that a caller has on the specified resource. See Testing
-   * Permissions for more information. (datasets.testIamPermissions)
-   *
-   * @param string $resource REQUIRED: The resource for which policy is being
-   * specified. Format is `datasets/`.
-   * @param Google_TestIamPermissionsRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_TestIamPermissionsResponse
-   */
-  public function testIamPermissions($resource, Google_Service_Genomics_TestIamPermissionsRequest $postBody, $optParams = array())
-  {
-    $params = array('resource' => $resource, 'postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('testIamPermissions', array($params), "Google_Service_Genomics_TestIamPermissionsResponse");
-  }
-
   /**
    * Undeletes a dataset by restoring a dataset which was deleted via this API.
    * This operation is only possible for a week after the deletion occurred.
    * (datasets.undelete)
    *
-   * @param string $datasetId The ID of the dataset to be undeleted.
-   * @param Google_UndeleteDatasetRequest $postBody
+   * @param string $datasetId
+   * The ID of the dataset to be undeleted.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Genomics_Dataset
    */
-  public function undelete($datasetId, Google_Service_Genomics_UndeleteDatasetRequest $postBody, $optParams = array())
+  public function undelete($datasetId, $optParams = array())
   {
-    $params = array('datasetId' => $datasetId, 'postBody' => $postBody);
+    $params = array('datasetId' => $datasetId);
     $params = array_merge($params, $optParams);
     return $this->call('undelete', array($params), "Google_Service_Genomics_Dataset");
   }
-}
-
-/**
- * The "operations" collection of methods.
- * Typical usage is:
- *  <code>
- *   $genomicsService = new Google_Service_Genomics(...);
- *   $operations = $genomicsService->operations;
- *  </code>
- */
-class Google_Service_Genomics_Operations_Resource extends Google_Service_Resource
-{
-
   /**
-   * Starts asynchronous cancellation on a long-running operation. The server
-   * makes a best effort to cancel the operation, but success is not guaranteed.
-   * Clients may use Operations.GetOperation or Operations.ListOperations to check
-   * whether the cancellation succeeded or the operation completed despite
-   * cancellation. (operations.cancel)
+   * Updates a dataset. (datasets.update)
    *
-   * @param string $name The name of the operation resource to be cancelled.
-   * @param Google_CancelOperationRequest $postBody
+   * @param string $datasetId
+   * The ID of the dataset to be updated.
+   * @param Google_Dataset $postBody
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Empty
+   * @return Google_Service_Genomics_Dataset
    */
-  public function cancel($name, Google_Service_Genomics_CancelOperationRequest $postBody, $optParams = array())
+  public function update($datasetId, Google_Service_Genomics_Dataset $postBody, $optParams = array())
   {
-    $params = array('name' => $name, 'postBody' => $postBody);
+    $params = array('datasetId' => $datasetId, 'postBody' => $postBody);
     $params = array_merge($params, $optParams);
-    return $this->call('cancel', array($params), "Google_Service_Genomics_Empty");
-  }
-
-  /**
-   * This method is not implemented. To cancel an operation, please use
-   * Operations.CancelOperation. (operations.delete)
-   *
-   * @param string $name The name of the operation resource to be deleted.
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Empty
-   */
-  public function delete($name, $optParams = array())
-  {
-    $params = array('name' => $name);
-    $params = array_merge($params, $optParams);
-    return $this->call('delete', array($params), "Google_Service_Genomics_Empty");
-  }
-
-  /**
-   * Gets the latest state of a long-running operation. Clients can use this
-   * method to poll the operation result at intervals as recommended by the API
-   * service. (operations.get)
-   *
-   * @param string $name The name of the operation resource.
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Operation
-   */
-  public function get($name, $optParams = array())
-  {
-    $params = array('name' => $name);
-    $params = array_merge($params, $optParams);
-    return $this->call('get', array($params), "Google_Service_Genomics_Operation");
-  }
-
-  /**
-   * Lists operations that match the specified filter in the request.
-   * (operations.listOperations)
-   *
-   * @param string $name The name of the operation collection.
-   * @param array $optParams Optional parameters.
-   *
-   * @opt_param string filter A string for filtering Operations. The following
-   * filter fields are supported: * projectId: Required. Corresponds to
-   * OperationMetadata.projectId. * createTime: The time this job was created, in
-   * seconds from the [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use
-   * `>=` and/or `= 1432140000` * `projectId = my-project AND createTime >=
-   * 1432140000 AND createTime <= 1432150000 AND status = RUNNING`
-   * @opt_param string pageToken The standard list page token.
-   * @opt_param int pageSize The maximum number of results to return. If
-   * unspecified, defaults to 256. The maximum value is 2048.
-   * @return Google_Service_Genomics_ListOperationsResponse
-   */
-  public function listOperations($name, $optParams = array())
-  {
-    $params = array('name' => $name);
-    $params = array_merge($params, $optParams);
-    return $this->call('list', array($params), "Google_Service_Genomics_ListOperationsResponse");
+    return $this->call('update', array($params), "Google_Service_Genomics_Dataset");
   }
 }
 
 /**
- * The "readgroupsets" collection of methods.
+ * The "experimental" collection of methods.
  * Typical usage is:
  *  <code>
  *   $genomicsService = new Google_Service_Genomics(...);
- *   $readgroupsets = $genomicsService->readgroupsets;
+ *   $experimental = $genomicsService->experimental;
  *  </code>
  */
-class Google_Service_Genomics_Readgroupsets_Resource extends Google_Service_Resource
+class Google_Service_Genomics_Experimental_Resource extends Google_Service_Resource
+{
+
+}
+
+/**
+ * The "jobs" collection of methods.
+ * Typical usage is:
+ *  <code>
+ *   $genomicsService = new Google_Service_Genomics(...);
+ *   $jobs = $genomicsService->jobs;
+ *  </code>
+ */
+class Google_Service_Genomics_ExperimentalJobs_Resource extends Google_Service_Resource
 {
 
   /**
-   * Deletes a read group set. (readgroupsets.delete)
+   * Creates and asynchronously runs an ad-hoc job. This is an experimental call
+   * and may be removed or changed at any time. (jobs.create)
    *
-   * @param string $readGroupSetId The ID of the read group set to be deleted. The
-   * caller must have WRITE permissions to the dataset associated with this read
-   * group set.
+   * @param Google_ExperimentalCreateJobRequest $postBody
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Empty
+   * @return Google_Service_Genomics_ExperimentalCreateJobResponse
    */
-  public function delete($readGroupSetId, $optParams = array())
-  {
-    $params = array('readGroupSetId' => $readGroupSetId);
-    $params = array_merge($params, $optParams);
-    return $this->call('delete', array($params), "Google_Service_Genomics_Empty");
-  }
-
-  /**
-   * Exports a read group set to a BAM file in Google Cloud Storage. Note that
-   * currently there may be some differences between exported BAM files and the
-   * original BAM file at the time of import. See
-   * [ImportReadGroupSets](google.genomics.v1.ReadServiceV1.ImportReadGroupSets)
-   * for caveats. (readgroupsets.export)
-   *
-   * @param string $readGroupSetId Required. The ID of the read group set to
-   * export.
-   * @param Google_ExportReadGroupSetRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Operation
-   */
-  public function export($readGroupSetId, Google_Service_Genomics_ExportReadGroupSetRequest $postBody, $optParams = array())
-  {
-    $params = array('readGroupSetId' => $readGroupSetId, 'postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('export', array($params), "Google_Service_Genomics_Operation");
-  }
-
-  /**
-   * Gets a read group set by ID. (readgroupsets.get)
-   *
-   * @param string $readGroupSetId The ID of the read group set.
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_ReadGroupSet
-   */
-  public function get($readGroupSetId, $optParams = array())
-  {
-    $params = array('readGroupSetId' => $readGroupSetId);
-    $params = array_merge($params, $optParams);
-    return $this->call('get', array($params), "Google_Service_Genomics_ReadGroupSet");
-  }
-
-  /**
-   * Creates read group sets by asynchronously importing the provided information.
-   * The caller must have WRITE permissions to the dataset. ## Notes on
-   * [BAM](https://samtools.github.io/hts-specs/SAMv1.pdf) import - Tags will be
-   * converted to strings - tag types are not preserved - Comments (`@CO`) in the
-   * input file header will not be preserved - Original header order of references
-   * (`@SQ`) will not be preserved - Any reverse stranded unmapped reads will be
-   * reverse complemented, and their qualities (and "BQ" tag, if any) will be
-   * reversed - Unmapped reads will be stripped of positional information
-   * (reference name and position) (readgroupsets.import)
-   *
-   * @param Google_ImportReadGroupSetsRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Operation
-   */
-  public function import(Google_Service_Genomics_ImportReadGroupSetsRequest $postBody, $optParams = array())
+  public function create(Google_Service_Genomics_ExperimentalCreateJobRequest $postBody, $optParams = array())
   {
     $params = array('postBody' => $postBody);
     $params = array_merge($params, $optParams);
-    return $this->call('import', array($params), "Google_Service_Genomics_Operation");
-  }
-
-  /**
-   * Updates a read group set. This method supports patch semantics.
-   * (readgroupsets.patch)
-   *
-   * @param string $readGroupSetId The ID of the read group set to be updated. The
-   * caller must have WRITE permissions to the dataset associated with this read
-   * group set.
-   * @param Google_ReadGroupSet $postBody
-   * @param array $optParams Optional parameters.
-   *
-   * @opt_param string updateMask An optional mask specifying which fields to
-   * update. At this time, mutable fields are referenceSetId and name. Acceptable
-   * values are "referenceSetId" and "name". If unspecified, all mutable fields
-   * will be updated.
-   * @return Google_Service_Genomics_ReadGroupSet
-   */
-  public function patch($readGroupSetId, Google_Service_Genomics_ReadGroupSet $postBody, $optParams = array())
-  {
-    $params = array('readGroupSetId' => $readGroupSetId, 'postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('patch', array($params), "Google_Service_Genomics_ReadGroupSet");
-  }
-
-  /**
-   * Searches for read group sets matching the criteria. Implements [GlobalAllianc
-   * eApi.searchReadGroupSets](https://github.com/ga4gh/schemas/blob/v0.5.1/src/ma
-   * in/resources/avro/readmethods.avdl#L135). (readgroupsets.search)
-   *
-   * @param Google_SearchReadGroupSetsRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_SearchReadGroupSetsResponse
-   */
-  public function search(Google_Service_Genomics_SearchReadGroupSetsRequest $postBody, $optParams = array())
-  {
-    $params = array('postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('search', array($params), "Google_Service_Genomics_SearchReadGroupSetsResponse");
+    return $this->call('create', array($params), "Google_Service_Genomics_ExperimentalCreateJobResponse");
   }
 }
 
 /**
- * The "coveragebuckets" collection of methods.
+ * The "jobs" collection of methods.
  * Typical usage is:
  *  <code>
  *   $genomicsService = new Google_Service_Genomics(...);
- *   $coveragebuckets = $genomicsService->coveragebuckets;
+ *   $jobs = $genomicsService->jobs;
  *  </code>
  */
-class Google_Service_Genomics_ReadgroupsetsCoveragebuckets_Resource extends Google_Service_Resource
+class Google_Service_Genomics_Jobs_Resource extends Google_Service_Resource
 {
 
   /**
-   * Lists fixed width coverage buckets for a read group set, each of which
-   * correspond to a range of a reference sequence. Each bucket summarizes
-   * coverage information across its corresponding genomic range. Coverage is
-   * defined as the number of reads which are aligned to a given base in the
-   * reference sequence. Coverage buckets are available at several precomputed
-   * bucket widths, enabling retrieval of various coverage 'zoom levels'. The
-   * caller must have READ permissions for the target read group set.
-   * (coveragebuckets.listReadgroupsetsCoveragebuckets)
+   * Cancels a job by ID. Note that it is possible for partial results to be
+   * generated and stored for cancelled jobs. (jobs.cancel)
    *
-   * @param string $readGroupSetId Required. The ID of the read group set over
-   * which coverage is requested.
+   * @param string $jobId
+   * Required. The ID of the job.
    * @param array $optParams Optional parameters.
-   *
-   * @opt_param string end The end position of the range on the reference, 0-based
-   * exclusive. If specified, `referenceName` must also be specified. If unset or
-   * 0, defaults to the length of the reference.
-   * @opt_param int pageSize The maximum number of results to return in a single
-   * page. If unspecified, defaults to 1024. The maximum value is 2048.
-   * @opt_param string start The start position of the range on the reference,
-   * 0-based inclusive. If specified, `referenceName` must also be specified.
-   * Defaults to 0.
-   * @opt_param string pageToken The continuation token, which is used to page
-   * through large result sets. To get the next page of results, set this
-   * parameter to the value of `nextPageToken` from the previous response.
-   * @opt_param string targetBucketWidth The desired width of each reported
-   * coverage bucket in base pairs. This will be rounded down to the nearest
-   * precomputed bucket width; the value of which is returned as `bucketWidth` in
-   * the response. Defaults to infinity (each bucket spans an entire reference
-   * sequence) or the length of the target range, if specified. The smallest
-   * precomputed `bucketWidth` is currently 2048 base pairs; this is subject to
-   * change.
-   * @opt_param string referenceName The name of the reference to query, within
-   * the reference set associated with this query. Optional.
-   * @return Google_Service_Genomics_ListCoverageBucketsResponse
    */
-  public function listReadgroupsetsCoveragebuckets($readGroupSetId, $optParams = array())
+  public function cancel($jobId, $optParams = array())
   {
-    $params = array('readGroupSetId' => $readGroupSetId);
+    $params = array('jobId' => $jobId);
     $params = array_merge($params, $optParams);
-    return $this->call('list', array($params), "Google_Service_Genomics_ListCoverageBucketsResponse");
+    return $this->call('cancel', array($params));
+  }
+  /**
+   * Gets a job by ID. (jobs.get)
+   *
+   * @param string $jobId
+   * Required. The ID of the job.
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_Job
+   */
+  public function get($jobId, $optParams = array())
+  {
+    $params = array('jobId' => $jobId);
+    $params = array_merge($params, $optParams);
+    return $this->call('get', array($params), "Google_Service_Genomics_Job");
+  }
+  /**
+   * Gets a list of jobs matching the criteria. (jobs.search)
+   *
+   * @param Google_SearchJobsRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_SearchJobsResponse
+   */
+  public function search(Google_Service_Genomics_SearchJobsRequest $postBody, $optParams = array())
+  {
+    $params = array('postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('search', array($params), "Google_Service_Genomics_SearchJobsResponse");
   }
 }
 
@@ -1147,17 +865,15 @@ class Google_Service_Genomics_Reads_Resource extends Google_Service_Resource
 {
 
   /**
-   * Gets a list of reads for one or more read group sets. Reads search operates
-   * over a genomic coordinate space of reference sequence & position defined over
-   * the reference sequences to which the requested read group sets are aligned.
-   * If a target positional range is specified, search returns all reads whose
-   * alignment to the reference genome overlap the range. A query which specifies
-   * only read group set IDs yields all reads in those read group sets, including
-   * unmapped reads. All reads returned (including reads on subsequent pages) are
-   * ordered by genomic coordinate (reference sequence & position). Reads with
-   * equivalent genomic coordinates are returned in a deterministic order.
-   * Implements [GlobalAllianceApi.searchReads](https://github.com/ga4gh/schemas/b
-   * lob/v0.5.1/src/main/resources/avro/readmethods.avdl#L85). (reads.search)
+   * Gets a list of reads for one or more readsets. Reads search operates over a
+   * genomic coordinate space of reference sequence & position defined over the
+   * reference sequences to which the requested readsets are aligned. If a target
+   * positional range is specified, search returns all reads whose alignment to
+   * the reference genome overlap the range. A query which specifies only readset
+   * IDs yields all reads in those readsets, including unmapped reads. All reads
+   * returned (including reads on subsequent pages) are ordered by genomic
+   * coordinate (reference sequence & position). Reads with equivalent genomic
+   * coordinates are returned in a deterministic order. (reads.search)
    *
    * @param Google_SearchReadsRequest $postBody
    * @param array $optParams Optional parameters.
@@ -1172,129 +888,175 @@ class Google_Service_Genomics_Reads_Resource extends Google_Service_Resource
 }
 
 /**
- * The "references" collection of methods.
+ * The "readsets" collection of methods.
  * Typical usage is:
  *  <code>
  *   $genomicsService = new Google_Service_Genomics(...);
- *   $references = $genomicsService->references;
+ *   $readsets = $genomicsService->readsets;
  *  </code>
  */
-class Google_Service_Genomics_References_Resource extends Google_Service_Resource
+class Google_Service_Genomics_Readsets_Resource extends Google_Service_Resource
 {
 
   /**
-   * Gets a reference. Implements [GlobalAllianceApi.getReference](https://github.
-   * com/ga4gh/schemas/blob/v0.5.1/src/main/resources/avro/referencemethods.avdl#L
-   * 158). (references.get)
+   * Deletes a readset. (readsets.delete)
    *
-   * @param string $referenceId The ID of the reference.
+   * @param string $readsetId
+   * The ID of the readset to be deleted. The caller must have WRITE permissions to the dataset
+    * associated with this readset.
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Reference
    */
-  public function get($referenceId, $optParams = array())
+  public function delete($readsetId, $optParams = array())
   {
-    $params = array('referenceId' => $referenceId);
+    $params = array('readsetId' => $readsetId);
     $params = array_merge($params, $optParams);
-    return $this->call('get', array($params), "Google_Service_Genomics_Reference");
+    return $this->call('delete', array($params));
   }
-
   /**
-   * Searches for references which match the given criteria. Implements [GlobalAll
-   * ianceApi.searchReferences](https://github.com/ga4gh/schemas/blob/v0.5.1/src/m
-   * ain/resources/avro/referencemethods.avdl#L146). (references.search)
+   * Exports readsets to a BAM file in Google Cloud Storage. Note that currently
+   * there may be some differences between exported BAM files and the original BAM
+   * file at the time of import. In particular, comments in the input file header
+   * will not be preserved, and some custom tags will be converted to strings.
+   * (readsets.export)
    *
-   * @param Google_SearchReferencesRequest $postBody
+   * @param Google_ExportReadsetsRequest $postBody
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_SearchReferencesResponse
+   * @return Google_Service_Genomics_ExportReadsetsResponse
    */
-  public function search(Google_Service_Genomics_SearchReferencesRequest $postBody, $optParams = array())
+  public function export(Google_Service_Genomics_ExportReadsetsRequest $postBody, $optParams = array())
   {
     $params = array('postBody' => $postBody);
     $params = array_merge($params, $optParams);
-    return $this->call('search', array($params), "Google_Service_Genomics_SearchReferencesResponse");
+    return $this->call('export', array($params), "Google_Service_Genomics_ExportReadsetsResponse");
+  }
+  /**
+   * Gets a readset by ID. (readsets.get)
+   *
+   * @param string $readsetId
+   * The ID of the readset.
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_Readset
+   */
+  public function get($readsetId, $optParams = array())
+  {
+    $params = array('readsetId' => $readsetId);
+    $params = array_merge($params, $optParams);
+    return $this->call('get', array($params), "Google_Service_Genomics_Readset");
+  }
+  /**
+   * Creates readsets by asynchronously importing the provided information. Note
+   * that currently comments in the input file header are not imported and some
+   * custom tags will be converted to strings, rather than preserving tag types.
+   * The caller must have WRITE permissions to the dataset. (readsets.import)
+   *
+   * @param Google_ImportReadsetsRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_ImportReadsetsResponse
+   */
+  public function import(Google_Service_Genomics_ImportReadsetsRequest $postBody, $optParams = array())
+  {
+    $params = array('postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('import', array($params), "Google_Service_Genomics_ImportReadsetsResponse");
+  }
+  /**
+   * Updates a readset. This method supports patch semantics. (readsets.patch)
+   *
+   * @param string $readsetId
+   * The ID of the readset to be updated. The caller must have WRITE permissions to the dataset
+    * associated with this readset.
+   * @param Google_Readset $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_Readset
+   */
+  public function patch($readsetId, Google_Service_Genomics_Readset $postBody, $optParams = array())
+  {
+    $params = array('readsetId' => $readsetId, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('patch', array($params), "Google_Service_Genomics_Readset");
+  }
+  /**
+   * Gets a list of readsets matching the criteria. (readsets.search)
+   *
+   * @param Google_SearchReadsetsRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_SearchReadsetsResponse
+   */
+  public function search(Google_Service_Genomics_SearchReadsetsRequest $postBody, $optParams = array())
+  {
+    $params = array('postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('search', array($params), "Google_Service_Genomics_SearchReadsetsResponse");
+  }
+  /**
+   * Updates a readset. (readsets.update)
+   *
+   * @param string $readsetId
+   * The ID of the readset to be updated. The caller must have WRITE permissions to the dataset
+    * associated with this readset.
+   * @param Google_Readset $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_Readset
+   */
+  public function update($readsetId, Google_Service_Genomics_Readset $postBody, $optParams = array())
+  {
+    $params = array('readsetId' => $readsetId, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('update', array($params), "Google_Service_Genomics_Readset");
   }
 }
 
 /**
- * The "bases" collection of methods.
+ * The "coveragebuckets" collection of methods.
  * Typical usage is:
  *  <code>
  *   $genomicsService = new Google_Service_Genomics(...);
- *   $bases = $genomicsService->bases;
+ *   $coveragebuckets = $genomicsService->coveragebuckets;
  *  </code>
  */
-class Google_Service_Genomics_ReferencesBases_Resource extends Google_Service_Resource
+class Google_Service_Genomics_ReadsetsCoveragebuckets_Resource extends Google_Service_Resource
 {
 
   /**
-   * Lists the bases in a reference, optionally restricted to a range. Implements
-   * [GlobalAllianceApi.getReferenceBases](https://github.com/ga4gh/schemas/blob/v
-   * 0.5.1/src/main/resources/avro/referencemethods.avdl#L221).
-   * (bases.listReferencesBases)
+   * Lists fixed width coverage buckets for a readset, each of which correspond to
+   * a range of a reference sequence. Each bucket summarizes coverage information
+   * across its corresponding genomic range. Coverage is defined as the number of
+   * reads which are aligned to a given base in the reference sequence. Coverage
+   * buckets are available at various bucket widths, enabling various coverage
+   * "zoom levels". The caller must have READ permissions for the target readset.
+   * (coveragebuckets.listReadsetsCoveragebuckets)
    *
-   * @param string $referenceId The ID of the reference.
+   * @param string $readsetId
+   * Required. The ID of the readset over which coverage is requested.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string start The start position (0-based) of this query. Defaults
-   * to 0.
-   * @opt_param string end The end position (0-based, exclusive) of this query.
-   * Defaults to the length of this reference.
-   * @opt_param int pageSize Specifies the maximum number of bases to return in a
-   * single page.
-   * @opt_param string pageToken The continuation token, which is used to page
-   * through large result sets. To get the next page of results, set this
-   * parameter to the value of `nextPageToken` from the previous response.
-   * @return Google_Service_Genomics_ListBasesResponse
+   * @opt_param string range.sequenceStart
+   * The start position of the range on the reference, 1-based inclusive. If specified, sequenceName
+    * must also be specified.
+   * @opt_param string maxResults
+   * The maximum number of results to return in a single page. If unspecified, defaults to 1024. The
+    * maximum value is 2048.
+   * @opt_param string range.sequenceName
+   * The reference sequence name, for example chr1, 1, or chrX.
+   * @opt_param string pageToken
+   * The continuation token, which is used to page through large result sets. To get the next page of
+    * results, set this parameter to the value of nextPageToken from the previous response.
+   * @opt_param string targetBucketWidth
+   * The desired width of each reported coverage bucket in base pairs. This will be rounded down to
+    * the nearest precomputed bucket width; the value of which is returned as bucketWidth in the
+    * response. Defaults to infinity (each bucket spans an entire reference sequence) or the length of
+    * the target range, if specified. The smallest precomputed bucketWidth is currently 2048 base
+    * pairs; this is subject to change.
+   * @opt_param string range.sequenceEnd
+   * The end position of the range on the reference, 1-based exclusive. If specified, sequenceName
+    * must also be specified.
+   * @return Google_Service_Genomics_ListCoverageBucketsResponse
    */
-  public function listReferencesBases($referenceId, $optParams = array())
+  public function listReadsetsCoveragebuckets($readsetId, $optParams = array())
   {
-    $params = array('referenceId' => $referenceId);
+    $params = array('readsetId' => $readsetId);
     $params = array_merge($params, $optParams);
-    return $this->call('list', array($params), "Google_Service_Genomics_ListBasesResponse");
-  }
-}
-
-/**
- * The "referencesets" collection of methods.
- * Typical usage is:
- *  <code>
- *   $genomicsService = new Google_Service_Genomics(...);
- *   $referencesets = $genomicsService->referencesets;
- *  </code>
- */
-class Google_Service_Genomics_Referencesets_Resource extends Google_Service_Resource
-{
-
-  /**
-   * Gets a reference set. Implements [GlobalAllianceApi.getReferenceSet](https://
-   * github.com/ga4gh/schemas/blob/v0.5.1/src/main/resources/avro/referencemethods
-   * .avdl#L83). (referencesets.get)
-   *
-   * @param string $referenceSetId The ID of the reference set.
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_ReferenceSet
-   */
-  public function get($referenceSetId, $optParams = array())
-  {
-    $params = array('referenceSetId' => $referenceSetId);
-    $params = array_merge($params, $optParams);
-    return $this->call('get', array($params), "Google_Service_Genomics_ReferenceSet");
-  }
-
-  /**
-   * Searches for reference sets which match the given criteria. Implements [Globa
-   * lAllianceApi.searchReferenceSets](http://ga4gh.org/documentation/api/v0.5.1/g
-   * a4gh_api.html#/schema/org.ga4gh.searchReferenceSets). (referencesets.search)
-   *
-   * @param Google_SearchReferenceSetsRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_SearchReferenceSetsResponse
-   */
-  public function search(Google_Service_Genomics_SearchReferenceSetsRequest $postBody, $optParams = array())
-  {
-    $params = array('postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('search', array($params), "Google_Service_Genomics_SearchReferenceSetsResponse");
+    return $this->call('list', array($params), "Google_Service_Genomics_ListCoverageBucketsResponse");
   }
 }
 
@@ -1322,25 +1084,37 @@ class Google_Service_Genomics_Variants_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('create', array($params), "Google_Service_Genomics_Variant");
   }
-
   /**
    * Deletes a variant. (variants.delete)
    *
-   * @param string $variantId The ID of the variant to be deleted.
+   * @param string $variantId
+   * The ID of the variant to be deleted.
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Empty
    */
   public function delete($variantId, $optParams = array())
   {
     $params = array('variantId' => $variantId);
     $params = array_merge($params, $optParams);
-    return $this->call('delete', array($params), "Google_Service_Genomics_Empty");
+    return $this->call('delete', array($params));
   }
-
+  /**
+   * Exports variant data to an external destination. (variants.export)
+   *
+   * @param Google_ExportVariantsRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_ExportVariantsResponse
+   */
+  public function export(Google_Service_Genomics_ExportVariantsRequest $postBody, $optParams = array())
+  {
+    $params = array('postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('export', array($params), "Google_Service_Genomics_ExportVariantsResponse");
+  }
   /**
    * Gets a variant by ID. (variants.get)
    *
-   * @param string $variantId The ID of the variant.
+   * @param string $variantId
+   * The ID of the variant.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Genomics_Variant
    */
@@ -1350,56 +1124,23 @@ class Google_Service_Genomics_Variants_Resource extends Google_Service_Resource
     $params = array_merge($params, $optParams);
     return $this->call('get', array($params), "Google_Service_Genomics_Variant");
   }
-
   /**
-   * Creates variant data by asynchronously importing the provided information.
-   * The variants for import will be merged with any existing variant that matches
-   * its reference sequence, start, end, reference bases, and alternative bases.
-   * If no such variant exists, a new one will be created. When variants are
-   * merged, the call information from the new variant is added to the existing
-   * variant, and other fields (such as key/value pairs) are discarded. In
-   * particular, this means for merged VCF variants that have conflicting INFO
-   * fields, some data will be arbitrarily discarded. As a special case, for
-   * single-sample VCF files, QUAL and FILTER fields will be moved to the call
-   * level; these are sometimes interpreted in a call-specific context. Imported
-   * VCF headers are appended to the metadata already in a variant set.
-   * (variants.import)
+   * Creates variant data by asynchronously importing the provided information. If
+   * the destination variant set already contains data, new variants will be
+   * merged according to the behavior of mergeVariants. (variants.import)
    *
    * @param Google_ImportVariantsRequest $postBody
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Operation
+   * @return Google_Service_Genomics_ImportVariantsResponse
    */
   public function import(Google_Service_Genomics_ImportVariantsRequest $postBody, $optParams = array())
   {
     $params = array('postBody' => $postBody);
     $params = array_merge($params, $optParams);
-    return $this->call('import', array($params), "Google_Service_Genomics_Operation");
+    return $this->call('import', array($params), "Google_Service_Genomics_ImportVariantsResponse");
   }
-
   /**
-   * Updates a variant. This method supports patch semantics. Returns the modified
-   * variant without its calls. (variants.patch)
-   *
-   * @param string $variantId The ID of the variant to be updated.
-   * @param Google_Variant $postBody
-   * @param array $optParams Optional parameters.
-   *
-   * @opt_param string updateMask An optional mask specifying which fields to
-   * update. At this time, mutable fields are names and info. Acceptable values
-   * are "names" and "info". If unspecified, all mutable fields will be updated.
-   * @return Google_Service_Genomics_Variant
-   */
-  public function patch($variantId, Google_Service_Genomics_Variant $postBody, $optParams = array())
-  {
-    $params = array('variantId' => $variantId, 'postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('patch', array($params), "Google_Service_Genomics_Variant");
-  }
-
-  /**
-   * Gets a list of variants matching the criteria. Implements [GlobalAllianceApi.
-   * searchVariants](https://github.com/ga4gh/schemas/blob/v0.5.1/src/main/resourc
-   * es/avro/variantmethods.avdl#L126). (variants.search)
+   * Gets a list of variants matching the criteria. (variants.search)
    *
    * @param Google_SearchVariantsRequest $postBody
    * @param array $optParams Optional parameters.
@@ -1410,6 +1151,23 @@ class Google_Service_Genomics_Variants_Resource extends Google_Service_Resource
     $params = array('postBody' => $postBody);
     $params = array_merge($params, $optParams);
     return $this->call('search', array($params), "Google_Service_Genomics_SearchVariantsResponse");
+  }
+  /**
+   * Updates a variant's names and info fields. All other modifications are
+   * silently ignored. Returns the modified variant without its calls.
+   * (variants.update)
+   *
+   * @param string $variantId
+   * The ID of the variant to be updated.
+   * @param Google_Variant $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Genomics_Variant
+   */
+  public function update($variantId, Google_Service_Genomics_Variant $postBody, $optParams = array())
+  {
+    $params = array('variantId' => $variantId, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('update', array($params), "Google_Service_Genomics_Variant");
   }
 }
 
@@ -1425,57 +1183,24 @@ class Google_Service_Genomics_Variantsets_Resource extends Google_Service_Resour
 {
 
   /**
-   * Creates a new variant set. The provided variant set must have a valid
-   * `datasetId` set - all other fields are optional. Note that the `id` field
-   * will be ignored, as this is assigned by the server. (variantsets.create)
-   *
-   * @param Google_VariantSet $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_VariantSet
-   */
-  public function create(Google_Service_Genomics_VariantSet $postBody, $optParams = array())
-  {
-    $params = array('postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('create', array($params), "Google_Service_Genomics_VariantSet");
-  }
-
-  /**
    * Deletes the contents of a variant set. The variant set object is not deleted.
    * (variantsets.delete)
    *
-   * @param string $variantSetId The ID of the variant set to be deleted.
+   * @param string $variantSetId
+   * The ID of the variant set to be deleted.
    * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Empty
    */
   public function delete($variantSetId, $optParams = array())
   {
     $params = array('variantSetId' => $variantSetId);
     $params = array_merge($params, $optParams);
-    return $this->call('delete', array($params), "Google_Service_Genomics_Empty");
+    return $this->call('delete', array($params));
   }
-
-  /**
-   * Exports variant set data to an external destination. (variantsets.export)
-   *
-   * @param string $variantSetId Required. The ID of the variant set that contains
-   * variant data which should be exported. The caller must have READ access to
-   * this variant set.
-   * @param Google_ExportVariantSetRequest $postBody
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Genomics_Operation
-   */
-  public function export($variantSetId, Google_Service_Genomics_ExportVariantSetRequest $postBody, $optParams = array())
-  {
-    $params = array('variantSetId' => $variantSetId, 'postBody' => $postBody);
-    $params = array_merge($params, $optParams);
-    return $this->call('export', array($params), "Google_Service_Genomics_Operation");
-  }
-
   /**
    * Gets a variant set by ID. (variantsets.get)
    *
-   * @param string $variantSetId Required. The ID of the variant set.
+   * @param string $variantSetId
+   * Required. The ID of the variant set.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Genomics_VariantSet
    */
@@ -1485,32 +1210,30 @@ class Google_Service_Genomics_Variantsets_Resource extends Google_Service_Resour
     $params = array_merge($params, $optParams);
     return $this->call('get', array($params), "Google_Service_Genomics_VariantSet");
   }
-
   /**
-   * Updates a variant set. This method supports patch semantics.
-   * (variantsets.patch)
+   * Merges the given variants with existing variants. Each variant will be merged
+   * with an existing variant that matches its reference sequence, start, end,
+   * reference bases, and alternative bases. If no such variant exists, a new one
+   * will be created.
    *
-   * @param string $variantSetId The ID of the variant to be updated (must already
-   * exist).
-   * @param Google_VariantSet $postBody
+   * When variants are merged, the call information from the new variant is added
+   * to the existing variant, and other fields (such as key/value pairs) are
+   * discarded. (variantsets.mergeVariants)
+   *
+   * @param string $variantSetId
+   * The destination variant set.
+   * @param Google_Variant $postBody
    * @param array $optParams Optional parameters.
-   *
-   * @opt_param string updateMask An optional mask specifying which fields to
-   * update. At this time, the only mutable field is metadata. The only acceptable
-   * value is "metadata". If unspecified, all mutable fields will be updated.
-   * @return Google_Service_Genomics_VariantSet
    */
-  public function patch($variantSetId, Google_Service_Genomics_VariantSet $postBody, $optParams = array())
+  public function mergeVariants($variantSetId, Google_Service_Genomics_Variant $postBody, $optParams = array())
   {
     $params = array('variantSetId' => $variantSetId, 'postBody' => $postBody);
     $params = array_merge($params, $optParams);
-    return $this->call('patch', array($params), "Google_Service_Genomics_VariantSet");
+    return $this->call('mergeVariants', array($params));
   }
-
   /**
-   * Returns a list of all variant sets matching search criteria. Implements [Glob
-   * alAllianceApi.searchVariantSets](https://github.com/ga4gh/schemas/blob/v0.5.1
-   * /src/main/resources/avro/variantmethods.avdl#L49). (variantsets.search)
+   * Returns a list of all variant sets matching search criteria.
+   * (variantsets.search)
    *
    * @param Google_SearchVariantSetsRequest $postBody
    * @param array $optParams Optional parameters.
@@ -1527,31 +1250,100 @@ class Google_Service_Genomics_Variantsets_Resource extends Google_Service_Resour
 
 
 
-class Google_Service_Genomics_Binding extends Google_Collection
+class Google_Service_Genomics_Beacon extends Google_Model
 {
-  protected $collection_key = 'members';
   protected $internal_gapi_mappings = array(
   );
-  public $members;
-  public $role;
+  public $exists;
 
+  public function setExists($exists)
+  {
+    $this->exists = $exists;
+  }
 
-  public function setMembers($members)
+  public function getExists()
   {
-    $this->members = $members;
+    return $this->exists;
   }
-  public function getMembers()
+}
+
+class Google_Service_Genomics_Call extends Google_Collection
+{
+  protected $collection_key = 'genotypeLikelihood';
+  protected $internal_gapi_mappings = array(
+  );
+  public $callSetId;
+  public $callSetName;
+  public $genotype;
+  public $genotypeLikelihood;
+  public $info;
+  public $phaseset;
+
+  public function setCallSetId($callSetId)
   {
-    return $this->members;
+    $this->callSetId = $callSetId;
   }
-  public function setRole($role)
+
+  public function getCallSetId()
   {
-    $this->role = $role;
+    return $this->callSetId;
   }
-  public function getRole()
+
+  public function setCallSetName($callSetName)
   {
-    return $this->role;
+    $this->callSetName = $callSetName;
   }
+
+  public function getCallSetName()
+  {
+    return $this->callSetName;
+  }
+
+  public function setGenotype($genotype)
+  {
+    $this->genotype = $genotype;
+  }
+
+  public function getGenotype()
+  {
+    return $this->genotype;
+  }
+
+  public function setGenotypeLikelihood($genotypeLikelihood)
+  {
+    $this->genotypeLikelihood = $genotypeLikelihood;
+  }
+
+  public function getGenotypeLikelihood()
+  {
+    return $this->genotypeLikelihood;
+  }
+
+  public function setInfo($info)
+  {
+    $this->info = $info;
+  }
+
+  public function getInfo()
+  {
+    return $this->info;
+  }
+
+  public function setPhaseset($phaseset)
+  {
+    $this->phaseset = $phaseset;
+  }
+
+  public function getPhaseset()
+  {
+    return $this->phaseset;
+  }
+}
+
+class Google_Service_Genomics_CallInfo extends Google_Model
+{
+  protected $internal_gapi_mappings = array(
+  );
 }
 
 class Google_Service_Genomics_CallSet extends Google_Collection
@@ -1566,51 +1358,61 @@ class Google_Service_Genomics_CallSet extends Google_Collection
   public $sampleId;
   public $variantSetIds;
 
-
   public function setCreated($created)
   {
     $this->created = $created;
   }
+
   public function getCreated()
   {
     return $this->created;
   }
+
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
+
   public function setInfo($info)
   {
     $this->info = $info;
   }
+
   public function getInfo()
   {
     return $this->info;
   }
+
   public function setName($name)
   {
     $this->name = $name;
   }
+
   public function getName()
   {
     return $this->name;
   }
+
   public function setSampleId($sampleId)
   {
     $this->sampleId = $sampleId;
   }
+
   public function getSampleId()
   {
     return $this->sampleId;
   }
+
   public function setVariantSetIds($variantSetIds)
   {
     $this->variantSetIds = $variantSetIds;
   }
+
   public function getVariantSetIds()
   {
     return $this->variantSetIds;
@@ -1619,45 +1421,8 @@ class Google_Service_Genomics_CallSet extends Google_Collection
 
 class Google_Service_Genomics_CallSetInfo extends Google_Model
 {
-}
-
-class Google_Service_Genomics_CancelOperationRequest extends Google_Model
-{
-}
-
-class Google_Service_Genomics_CigarUnit extends Google_Model
-{
   protected $internal_gapi_mappings = array(
   );
-  public $operation;
-  public $operationLength;
-  public $referenceSequence;
-
-
-  public function setOperation($operation)
-  {
-    $this->operation = $operation;
-  }
-  public function getOperation()
-  {
-    return $this->operation;
-  }
-  public function setOperationLength($operationLength)
-  {
-    $this->operationLength = $operationLength;
-  }
-  public function getOperationLength()
-  {
-    return $this->operationLength;
-  }
-  public function setReferenceSequence($referenceSequence)
-  {
-    $this->referenceSequence = $referenceSequence;
-  }
-  public function getReferenceSequence()
-  {
-    return $this->referenceSequence;
-  }
 }
 
 class Google_Service_Genomics_CoverageBucket extends Google_Model
@@ -1665,22 +1430,24 @@ class Google_Service_Genomics_CoverageBucket extends Google_Model
   protected $internal_gapi_mappings = array(
   );
   public $meanCoverage;
-  protected $rangeType = 'Google_Service_Genomics_Range';
+  protected $rangeType = 'Google_Service_Genomics_GenomicRange';
   protected $rangeDataType = '';
-
 
   public function setMeanCoverage($meanCoverage)
   {
     $this->meanCoverage = $meanCoverage;
   }
+
   public function getMeanCoverage()
   {
     return $this->meanCoverage;
   }
-  public function setRange(Google_Service_Genomics_Range $range)
+
+  public function setRange(Google_Service_Genomics_GenomicRange $range)
   {
     $this->range = $range;
   }
+
   public function getRange()
   {
     return $this->range;
@@ -1691,131 +1458,266 @@ class Google_Service_Genomics_Dataset extends Google_Model
 {
   protected $internal_gapi_mappings = array(
   );
-  public $createTime;
   public $id;
+  public $isPublic;
   public $name;
   public $projectId;
 
-
-  public function setCreateTime($createTime)
-  {
-    $this->createTime = $createTime;
-  }
-  public function getCreateTime()
-  {
-    return $this->createTime;
-  }
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
+
+  public function setIsPublic($isPublic)
+  {
+    $this->isPublic = $isPublic;
+  }
+
+  public function getIsPublic()
+  {
+    return $this->isPublic;
+  }
+
   public function setName($name)
   {
     $this->name = $name;
   }
+
   public function getName()
   {
     return $this->name;
   }
+
   public function setProjectId($projectId)
   {
     $this->projectId = $projectId;
   }
+
   public function getProjectId()
   {
     return $this->projectId;
   }
 }
 
-class Google_Service_Genomics_Empty extends Google_Model
+class Google_Service_Genomics_ExperimentalCreateJobRequest extends Google_Collection
 {
-}
-
-class Google_Service_Genomics_Experiment extends Google_Model
-{
+  protected $collection_key = 'sourceUris';
   protected $internal_gapi_mappings = array(
   );
-  public $instrumentModel;
-  public $libraryId;
+  public $align;
+  public $callVariants;
+  public $gcsOutputPath;
+  public $libraryName;
+  public $pairedSourceUris;
+  public $platformName;
   public $platformUnit;
-  public $sequencingCenter;
+  public $projectId;
+  public $readGroupId;
+  public $sampleName;
+  public $sourceUris;
 
+  public function setAlign($align)
+  {
+    $this->align = $align;
+  }
 
-  public function setInstrumentModel($instrumentModel)
+  public function getAlign()
   {
-    $this->instrumentModel = $instrumentModel;
+    return $this->align;
   }
-  public function getInstrumentModel()
+
+  public function setCallVariants($callVariants)
   {
-    return $this->instrumentModel;
+    $this->callVariants = $callVariants;
   }
-  public function setLibraryId($libraryId)
+
+  public function getCallVariants()
   {
-    $this->libraryId = $libraryId;
+    return $this->callVariants;
   }
-  public function getLibraryId()
+
+  public function setGcsOutputPath($gcsOutputPath)
   {
-    return $this->libraryId;
+    $this->gcsOutputPath = $gcsOutputPath;
   }
+
+  public function getGcsOutputPath()
+  {
+    return $this->gcsOutputPath;
+  }
+
+  public function setLibraryName($libraryName)
+  {
+    $this->libraryName = $libraryName;
+  }
+
+  public function getLibraryName()
+  {
+    return $this->libraryName;
+  }
+
+  public function setPairedSourceUris($pairedSourceUris)
+  {
+    $this->pairedSourceUris = $pairedSourceUris;
+  }
+
+  public function getPairedSourceUris()
+  {
+    return $this->pairedSourceUris;
+  }
+
+  public function setPlatformName($platformName)
+  {
+    $this->platformName = $platformName;
+  }
+
+  public function getPlatformName()
+  {
+    return $this->platformName;
+  }
+
   public function setPlatformUnit($platformUnit)
   {
     $this->platformUnit = $platformUnit;
   }
+
   public function getPlatformUnit()
   {
     return $this->platformUnit;
   }
-  public function setSequencingCenter($sequencingCenter)
+
+  public function setProjectId($projectId)
   {
-    $this->sequencingCenter = $sequencingCenter;
+    $this->projectId = $projectId;
   }
-  public function getSequencingCenter()
+
+  public function getProjectId()
   {
-    return $this->sequencingCenter;
+    return $this->projectId;
+  }
+
+  public function setReadGroupId($readGroupId)
+  {
+    $this->readGroupId = $readGroupId;
+  }
+
+  public function getReadGroupId()
+  {
+    return $this->readGroupId;
+  }
+
+  public function setSampleName($sampleName)
+  {
+    $this->sampleName = $sampleName;
+  }
+
+  public function getSampleName()
+  {
+    return $this->sampleName;
+  }
+
+  public function setSourceUris($sourceUris)
+  {
+    $this->sourceUris = $sourceUris;
+  }
+
+  public function getSourceUris()
+  {
+    return $this->sourceUris;
   }
 }
 
-class Google_Service_Genomics_ExportReadGroupSetRequest extends Google_Collection
+class Google_Service_Genomics_ExperimentalCreateJobResponse extends Google_Model
+{
+  protected $internal_gapi_mappings = array(
+  );
+  public $jobId;
+
+  public function setJobId($jobId)
+  {
+    $this->jobId = $jobId;
+  }
+
+  public function getJobId()
+  {
+    return $this->jobId;
+  }
+}
+
+class Google_Service_Genomics_ExportReadsetsRequest extends Google_Collection
 {
   protected $collection_key = 'referenceNames';
   protected $internal_gapi_mappings = array(
   );
   public $exportUri;
   public $projectId;
+  public $readsetIds;
   public $referenceNames;
-
 
   public function setExportUri($exportUri)
   {
     $this->exportUri = $exportUri;
   }
+
   public function getExportUri()
   {
     return $this->exportUri;
   }
+
   public function setProjectId($projectId)
   {
     $this->projectId = $projectId;
   }
+
   public function getProjectId()
   {
     return $this->projectId;
   }
+
+  public function setReadsetIds($readsetIds)
+  {
+    $this->readsetIds = $readsetIds;
+  }
+
+  public function getReadsetIds()
+  {
+    return $this->readsetIds;
+  }
+
   public function setReferenceNames($referenceNames)
   {
     $this->referenceNames = $referenceNames;
   }
+
   public function getReferenceNames()
   {
     return $this->referenceNames;
   }
 }
 
-class Google_Service_Genomics_ExportVariantSetRequest extends Google_Collection
+class Google_Service_Genomics_ExportReadsetsResponse extends Google_Model
+{
+  protected $internal_gapi_mappings = array(
+  );
+  public $jobId;
+
+  public function setJobId($jobId)
+  {
+    $this->jobId = $jobId;
+  }
+
+  public function getJobId()
+  {
+    return $this->jobId;
+  }
+}
+
+class Google_Service_Genomics_ExportVariantsRequest extends Google_Collection
 {
   protected $collection_key = 'callSetIds';
   protected $internal_gapi_mappings = array(
@@ -1825,114 +1727,284 @@ class Google_Service_Genomics_ExportVariantSetRequest extends Google_Collection
   public $callSetIds;
   public $format;
   public $projectId;
-
+  public $variantSetId;
 
   public function setBigqueryDataset($bigqueryDataset)
   {
     $this->bigqueryDataset = $bigqueryDataset;
   }
+
   public function getBigqueryDataset()
   {
     return $this->bigqueryDataset;
   }
+
   public function setBigqueryTable($bigqueryTable)
   {
     $this->bigqueryTable = $bigqueryTable;
   }
+
   public function getBigqueryTable()
   {
     return $this->bigqueryTable;
   }
+
   public function setCallSetIds($callSetIds)
   {
     $this->callSetIds = $callSetIds;
   }
+
   public function getCallSetIds()
   {
     return $this->callSetIds;
   }
+
   public function setFormat($format)
   {
     $this->format = $format;
   }
+
   public function getFormat()
   {
     return $this->format;
   }
+
   public function setProjectId($projectId)
   {
     $this->projectId = $projectId;
   }
+
   public function getProjectId()
   {
     return $this->projectId;
   }
+
+  public function setVariantSetId($variantSetId)
+  {
+    $this->variantSetId = $variantSetId;
+  }
+
+  public function getVariantSetId()
+  {
+    return $this->variantSetId;
+  }
 }
 
-class Google_Service_Genomics_GetIamPolicyRequest extends Google_Model
+class Google_Service_Genomics_ExportVariantsResponse extends Google_Model
 {
+  protected $internal_gapi_mappings = array(
+  );
+  public $jobId;
+
+  public function setJobId($jobId)
+  {
+    $this->jobId = $jobId;
+  }
+
+  public function getJobId()
+  {
+    return $this->jobId;
+  }
 }
 
-class Google_Service_Genomics_ImportReadGroupSetsRequest extends Google_Collection
+class Google_Service_Genomics_GenomicRange extends Google_Model
+{
+  protected $internal_gapi_mappings = array(
+  );
+  public $sequenceEnd;
+  public $sequenceName;
+  public $sequenceStart;
+
+  public function setSequenceEnd($sequenceEnd)
+  {
+    $this->sequenceEnd = $sequenceEnd;
+  }
+
+  public function getSequenceEnd()
+  {
+    return $this->sequenceEnd;
+  }
+
+  public function setSequenceName($sequenceName)
+  {
+    $this->sequenceName = $sequenceName;
+  }
+
+  public function getSequenceName()
+  {
+    return $this->sequenceName;
+  }
+
+  public function setSequenceStart($sequenceStart)
+  {
+    $this->sequenceStart = $sequenceStart;
+  }
+
+  public function getSequenceStart()
+  {
+    return $this->sequenceStart;
+  }
+}
+
+class Google_Service_Genomics_Header extends Google_Model
+{
+  protected $internal_gapi_mappings = array(
+  );
+  public $sortingOrder;
+  public $version;
+
+  public function setSortingOrder($sortingOrder)
+  {
+    $this->sortingOrder = $sortingOrder;
+  }
+
+  public function getSortingOrder()
+  {
+    return $this->sortingOrder;
+  }
+
+  public function setVersion($version)
+  {
+    $this->version = $version;
+  }
+
+  public function getVersion()
+  {
+    return $this->version;
+  }
+}
+
+class Google_Service_Genomics_HeaderSection extends Google_Collection
+{
+  protected $collection_key = 'refSequences';
+  protected $internal_gapi_mappings = array(
+  );
+  public $comments;
+  public $fileUri;
+  public $filename;
+  protected $headersType = 'Google_Service_Genomics_Header';
+  protected $headersDataType = 'array';
+  protected $programsType = 'Google_Service_Genomics_Program';
+  protected $programsDataType = 'array';
+  protected $readGroupsType = 'Google_Service_Genomics_ReadGroup';
+  protected $readGroupsDataType = 'array';
+  protected $refSequencesType = 'Google_Service_Genomics_ReferenceSequence';
+  protected $refSequencesDataType = 'array';
+
+  public function setComments($comments)
+  {
+    $this->comments = $comments;
+  }
+
+  public function getComments()
+  {
+    return $this->comments;
+  }
+
+  public function setFileUri($fileUri)
+  {
+    $this->fileUri = $fileUri;
+  }
+
+  public function getFileUri()
+  {
+    return $this->fileUri;
+  }
+
+  public function setFilename($filename)
+  {
+    $this->filename = $filename;
+  }
+
+  public function getFilename()
+  {
+    return $this->filename;
+  }
+
+  public function setHeaders($headers)
+  {
+    $this->headers = $headers;
+  }
+
+  public function getHeaders()
+  {
+    return $this->headers;
+  }
+
+  public function setPrograms($programs)
+  {
+    $this->programs = $programs;
+  }
+
+  public function getPrograms()
+  {
+    return $this->programs;
+  }
+
+  public function setReadGroups($readGroups)
+  {
+    $this->readGroups = $readGroups;
+  }
+
+  public function getReadGroups()
+  {
+    return $this->readGroups;
+  }
+
+  public function setRefSequences($refSequences)
+  {
+    $this->refSequences = $refSequences;
+  }
+
+  public function getRefSequences()
+  {
+    return $this->refSequences;
+  }
+}
+
+class Google_Service_Genomics_ImportReadsetsRequest extends Google_Collection
 {
   protected $collection_key = 'sourceUris';
   protected $internal_gapi_mappings = array(
   );
   public $datasetId;
-  public $partitionStrategy;
-  public $referenceSetId;
   public $sourceUris;
-
 
   public function setDatasetId($datasetId)
   {
     $this->datasetId = $datasetId;
   }
+
   public function getDatasetId()
   {
     return $this->datasetId;
   }
-  public function setPartitionStrategy($partitionStrategy)
-  {
-    $this->partitionStrategy = $partitionStrategy;
-  }
-  public function getPartitionStrategy()
-  {
-    return $this->partitionStrategy;
-  }
-  public function setReferenceSetId($referenceSetId)
-  {
-    $this->referenceSetId = $referenceSetId;
-  }
-  public function getReferenceSetId()
-  {
-    return $this->referenceSetId;
-  }
+
   public function setSourceUris($sourceUris)
   {
     $this->sourceUris = $sourceUris;
   }
+
   public function getSourceUris()
   {
     return $this->sourceUris;
   }
 }
 
-class Google_Service_Genomics_ImportReadGroupSetsResponse extends Google_Collection
+class Google_Service_Genomics_ImportReadsetsResponse extends Google_Model
 {
-  protected $collection_key = 'readGroupSetIds';
   protected $internal_gapi_mappings = array(
   );
-  public $readGroupSetIds;
+  public $jobId;
 
-
-  public function setReadGroupSetIds($readGroupSetIds)
+  public function setJobId($jobId)
   {
-    $this->readGroupSetIds = $readGroupSetIds;
+    $this->jobId = $jobId;
   }
-  public function getReadGroupSetIds()
+
+  public function getJobId()
   {
-    return $this->readGroupSetIds;
+    return $this->jobId;
   }
 }
 
@@ -1942,133 +2014,201 @@ class Google_Service_Genomics_ImportVariantsRequest extends Google_Collection
   protected $internal_gapi_mappings = array(
   );
   public $format;
-  public $normalizeReferenceNames;
   public $sourceUris;
   public $variantSetId;
-
 
   public function setFormat($format)
   {
     $this->format = $format;
   }
+
   public function getFormat()
   {
     return $this->format;
   }
-  public function setNormalizeReferenceNames($normalizeReferenceNames)
-  {
-    $this->normalizeReferenceNames = $normalizeReferenceNames;
-  }
-  public function getNormalizeReferenceNames()
-  {
-    return $this->normalizeReferenceNames;
-  }
+
   public function setSourceUris($sourceUris)
   {
     $this->sourceUris = $sourceUris;
   }
+
   public function getSourceUris()
   {
     return $this->sourceUris;
   }
+
   public function setVariantSetId($variantSetId)
   {
     $this->variantSetId = $variantSetId;
   }
+
   public function getVariantSetId()
   {
     return $this->variantSetId;
   }
 }
 
-class Google_Service_Genomics_ImportVariantsResponse extends Google_Collection
+class Google_Service_Genomics_ImportVariantsResponse extends Google_Model
 {
-  protected $collection_key = 'callSetIds';
   protected $internal_gapi_mappings = array(
   );
-  public $callSetIds;
+  public $jobId;
 
-
-  public function setCallSetIds($callSetIds)
+  public function setJobId($jobId)
   {
-    $this->callSetIds = $callSetIds;
+    $this->jobId = $jobId;
   }
-  public function getCallSetIds()
+
+  public function getJobId()
   {
-    return $this->callSetIds;
+    return $this->jobId;
   }
 }
 
-class Google_Service_Genomics_LinearAlignment extends Google_Collection
+class Google_Service_Genomics_Job extends Google_Collection
 {
-  protected $collection_key = 'cigar';
+  protected $collection_key = 'warnings';
   protected $internal_gapi_mappings = array(
   );
-  protected $cigarType = 'Google_Service_Genomics_CigarUnit';
-  protected $cigarDataType = 'array';
-  public $mappingQuality;
-  protected $positionType = 'Google_Service_Genomics_Position';
-  protected $positionDataType = '';
+  public $created;
+  public $description;
+  public $errors;
+  public $id;
+  public $importedIds;
+  public $projectId;
+  protected $requestType = 'Google_Service_Genomics_JobRequest';
+  protected $requestDataType = '';
+  public $status;
+  public $warnings;
 
+  public function setCreated($created)
+  {
+    $this->created = $created;
+  }
 
-  public function setCigar($cigar)
+  public function getCreated()
   {
-    $this->cigar = $cigar;
+    return $this->created;
   }
-  public function getCigar()
+
+  public function setDescription($description)
   {
-    return $this->cigar;
+    $this->description = $description;
   }
-  public function setMappingQuality($mappingQuality)
+
+  public function getDescription()
   {
-    $this->mappingQuality = $mappingQuality;
+    return $this->description;
   }
-  public function getMappingQuality()
+
+  public function setErrors($errors)
   {
-    return $this->mappingQuality;
+    $this->errors = $errors;
   }
-  public function setPosition(Google_Service_Genomics_Position $position)
+
+  public function getErrors()
   {
-    $this->position = $position;
+    return $this->errors;
   }
-  public function getPosition()
+
+  public function setId($id)
   {
-    return $this->position;
+    $this->id = $id;
+  }
+
+  public function getId()
+  {
+    return $this->id;
+  }
+
+  public function setImportedIds($importedIds)
+  {
+    $this->importedIds = $importedIds;
+  }
+
+  public function getImportedIds()
+  {
+    return $this->importedIds;
+  }
+
+  public function setProjectId($projectId)
+  {
+    $this->projectId = $projectId;
+  }
+
+  public function getProjectId()
+  {
+    return $this->projectId;
+  }
+
+  public function setRequest(Google_Service_Genomics_JobRequest $request)
+  {
+    $this->request = $request;
+  }
+
+  public function getRequest()
+  {
+    return $this->request;
+  }
+
+  public function setStatus($status)
+  {
+    $this->status = $status;
+  }
+
+  public function getStatus()
+  {
+    return $this->status;
+  }
+
+  public function setWarnings($warnings)
+  {
+    $this->warnings = $warnings;
+  }
+
+  public function getWarnings()
+  {
+    return $this->warnings;
   }
 }
 
-class Google_Service_Genomics_ListBasesResponse extends Google_Model
+class Google_Service_Genomics_JobRequest extends Google_Collection
 {
+  protected $collection_key = 'source';
   protected $internal_gapi_mappings = array(
   );
-  public $nextPageToken;
-  public $offset;
-  public $sequence;
+  public $destination;
+  public $source;
+  public $type;
 
+  public function setDestination($destination)
+  {
+    $this->destination = $destination;
+  }
 
-  public function setNextPageToken($nextPageToken)
+  public function getDestination()
   {
-    $this->nextPageToken = $nextPageToken;
+    return $this->destination;
   }
-  public function getNextPageToken()
+
+  public function setSource($source)
   {
-    return $this->nextPageToken;
+    $this->source = $source;
   }
-  public function setOffset($offset)
+
+  public function getSource()
   {
-    $this->offset = $offset;
+    return $this->source;
   }
-  public function getOffset()
+
+  public function setType($type)
   {
-    return $this->offset;
+    $this->type = $type;
   }
-  public function setSequence($sequence)
+
+  public function getType()
   {
-    $this->sequence = $sequence;
-  }
-  public function getSequence()
-  {
-    return $this->sequence;
+    return $this->type;
   }
 }
 
@@ -2082,27 +2222,31 @@ class Google_Service_Genomics_ListCoverageBucketsResponse extends Google_Collect
   protected $coverageBucketsDataType = 'array';
   public $nextPageToken;
 
-
   public function setBucketWidth($bucketWidth)
   {
     $this->bucketWidth = $bucketWidth;
   }
+
   public function getBucketWidth()
   {
     return $this->bucketWidth;
   }
+
   public function setCoverageBuckets($coverageBuckets)
   {
     $this->coverageBuckets = $coverageBuckets;
   }
+
   public function getCoverageBuckets()
   {
     return $this->coverageBuckets;
   }
+
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
@@ -2118,248 +2262,114 @@ class Google_Service_Genomics_ListDatasetsResponse extends Google_Collection
   protected $datasetsDataType = 'array';
   public $nextPageToken;
 
-
   public function setDatasets($datasets)
   {
     $this->datasets = $datasets;
   }
+
   public function getDatasets()
   {
     return $this->datasets;
   }
+
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
   }
 }
 
-class Google_Service_Genomics_ListOperationsResponse extends Google_Collection
-{
-  protected $collection_key = 'operations';
-  protected $internal_gapi_mappings = array(
-  );
-  public $nextPageToken;
-  protected $operationsType = 'Google_Service_Genomics_Operation';
-  protected $operationsDataType = 'array';
-
-
-  public function setNextPageToken($nextPageToken)
-  {
-    $this->nextPageToken = $nextPageToken;
-  }
-  public function getNextPageToken()
-  {
-    return $this->nextPageToken;
-  }
-  public function setOperations($operations)
-  {
-    $this->operations = $operations;
-  }
-  public function getOperations()
-  {
-    return $this->operations;
-  }
-}
-
-class Google_Service_Genomics_Operation extends Google_Model
-{
-  protected $internal_gapi_mappings = array(
-  );
-  public $done;
-  protected $errorType = 'Google_Service_Genomics_Status';
-  protected $errorDataType = '';
-  public $metadata;
-  public $name;
-  public $response;
-
-
-  public function setDone($done)
-  {
-    $this->done = $done;
-  }
-  public function getDone()
-  {
-    return $this->done;
-  }
-  public function setError(Google_Service_Genomics_Status $error)
-  {
-    $this->error = $error;
-  }
-  public function getError()
-  {
-    return $this->error;
-  }
-  public function setMetadata($metadata)
-  {
-    $this->metadata = $metadata;
-  }
-  public function getMetadata()
-  {
-    return $this->metadata;
-  }
-  public function setName($name)
-  {
-    $this->name = $name;
-  }
-  public function getName()
-  {
-    return $this->name;
-  }
-  public function setResponse($response)
-  {
-    $this->response = $response;
-  }
-  public function getResponse()
-  {
-    return $this->response;
-  }
-}
-
-class Google_Service_Genomics_OperationEvent extends Google_Model
+class Google_Service_Genomics_Metadata extends Google_Model
 {
   protected $internal_gapi_mappings = array(
   );
   public $description;
-
+  public $id;
+  public $info;
+  public $key;
+  public $number;
+  public $type;
+  public $value;
 
   public function setDescription($description)
   {
     $this->description = $description;
   }
+
   public function getDescription()
   {
     return $this->description;
   }
-}
 
-class Google_Service_Genomics_OperationMetadata extends Google_Collection
-{
-  protected $collection_key = 'events';
-  protected $internal_gapi_mappings = array(
-  );
-  public $createTime;
-  protected $eventsType = 'Google_Service_Genomics_OperationEvent';
-  protected $eventsDataType = 'array';
-  public $projectId;
-  public $request;
+  public function setId($id)
+  {
+    $this->id = $id;
+  }
 
+  public function getId()
+  {
+    return $this->id;
+  }
 
-  public function setCreateTime($createTime)
+  public function setInfo($info)
   {
-    $this->createTime = $createTime;
+    $this->info = $info;
   }
-  public function getCreateTime()
-  {
-    return $this->createTime;
-  }
-  public function setEvents($events)
-  {
-    $this->events = $events;
-  }
-  public function getEvents()
-  {
-    return $this->events;
-  }
-  public function setProjectId($projectId)
-  {
-    $this->projectId = $projectId;
-  }
-  public function getProjectId()
-  {
-    return $this->projectId;
-  }
-  public function setRequest($request)
-  {
-    $this->request = $request;
-  }
-  public function getRequest()
-  {
-    return $this->request;
-  }
-}
 
-class Google_Service_Genomics_OperationMetadataRequest extends Google_Model
-{
-}
+  public function getInfo()
+  {
+    return $this->info;
+  }
 
-class Google_Service_Genomics_OperationResponse extends Google_Model
-{
-}
+  public function setKey($key)
+  {
+    $this->key = $key;
+  }
 
-class Google_Service_Genomics_Policy extends Google_Collection
-{
-  protected $collection_key = 'bindings';
-  protected $internal_gapi_mappings = array(
-  );
-  protected $bindingsType = 'Google_Service_Genomics_Binding';
-  protected $bindingsDataType = 'array';
-  public $etag;
-  public $version;
+  public function getKey()
+  {
+    return $this->key;
+  }
 
+  public function setNumber($number)
+  {
+    $this->number = $number;
+  }
 
-  public function setBindings($bindings)
+  public function getNumber()
   {
-    $this->bindings = $bindings;
+    return $this->number;
   }
-  public function getBindings()
+
+  public function setType($type)
   {
-    return $this->bindings;
+    $this->type = $type;
   }
-  public function setEtag($etag)
+
+  public function getType()
   {
-    $this->etag = $etag;
+    return $this->type;
   }
-  public function getEtag()
+
+  public function setValue($value)
   {
-    return $this->etag;
+    $this->value = $value;
   }
-  public function setVersion($version)
+
+  public function getValue()
   {
-    $this->version = $version;
-  }
-  public function getVersion()
-  {
-    return $this->version;
+    return $this->value;
   }
 }
 
-class Google_Service_Genomics_Position extends Google_Model
+class Google_Service_Genomics_MetadataInfo extends Google_Model
 {
   protected $internal_gapi_mappings = array(
   );
-  public $position;
-  public $referenceName;
-  public $reverseStrand;
-
-
-  public function setPosition($position)
-  {
-    $this->position = $position;
-  }
-  public function getPosition()
-  {
-    return $this->position;
-  }
-  public function setReferenceName($referenceName)
-  {
-    $this->referenceName = $referenceName;
-  }
-  public function getReferenceName()
-  {
-    return $this->referenceName;
-  }
-  public function setReverseStrand($reverseStrand)
-  {
-    $this->reverseStrand = $reverseStrand;
-  }
-  public function getReverseStrand()
-  {
-    return $this->reverseStrand;
-  }
 }
 
 class Google_Service_Genomics_Program extends Google_Model
@@ -2372,503 +2382,421 @@ class Google_Service_Genomics_Program extends Google_Model
   public $prevProgramId;
   public $version;
 
-
   public function setCommandLine($commandLine)
   {
     $this->commandLine = $commandLine;
   }
+
   public function getCommandLine()
   {
     return $this->commandLine;
   }
+
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
+
   public function setName($name)
   {
     $this->name = $name;
   }
+
   public function getName()
   {
     return $this->name;
   }
+
   public function setPrevProgramId($prevProgramId)
   {
     $this->prevProgramId = $prevProgramId;
   }
+
   public function getPrevProgramId()
   {
     return $this->prevProgramId;
   }
+
   public function setVersion($version)
   {
     $this->version = $version;
   }
+
   public function getVersion()
   {
     return $this->version;
   }
 }
 
-class Google_Service_Genomics_Range extends Google_Model
+class Google_Service_Genomics_Read extends Google_Model
 {
   protected $internal_gapi_mappings = array(
   );
-  public $end;
-  public $referenceName;
-  public $start;
-
-
-  public function setEnd($end)
-  {
-    $this->end = $end;
-  }
-  public function getEnd()
-  {
-    return $this->end;
-  }
-  public function setReferenceName($referenceName)
-  {
-    $this->referenceName = $referenceName;
-  }
-  public function getReferenceName()
-  {
-    return $this->referenceName;
-  }
-  public function setStart($start)
-  {
-    $this->start = $start;
-  }
-  public function getStart()
-  {
-    return $this->start;
-  }
-}
-
-class Google_Service_Genomics_Read extends Google_Collection
-{
-  protected $collection_key = 'alignedQuality';
-  protected $internal_gapi_mappings = array(
-  );
-  public $alignedQuality;
-  public $alignedSequence;
-  protected $alignmentType = 'Google_Service_Genomics_LinearAlignment';
-  protected $alignmentDataType = '';
-  public $duplicateFragment;
-  public $failedVendorQualityChecks;
-  public $fragmentLength;
-  public $fragmentName;
+  public $alignedBases;
+  public $baseQuality;
+  public $cigar;
+  public $flags;
   public $id;
-  public $info;
-  protected $nextMatePositionType = 'Google_Service_Genomics_Position';
-  protected $nextMatePositionDataType = '';
-  public $numberReads;
-  public $properPlacement;
-  public $readGroupId;
-  public $readGroupSetId;
-  public $readNumber;
-  public $secondaryAlignment;
-  public $supplementaryAlignment;
+  public $mappingQuality;
+  public $matePosition;
+  public $mateReferenceSequenceName;
+  public $name;
+  public $originalBases;
+  public $position;
+  public $readsetId;
+  public $referenceSequenceName;
+  public $tags;
+  public $templateLength;
 
+  public function setAlignedBases($alignedBases)
+  {
+    $this->alignedBases = $alignedBases;
+  }
 
-  public function setAlignedQuality($alignedQuality)
+  public function getAlignedBases()
   {
-    $this->alignedQuality = $alignedQuality;
+    return $this->alignedBases;
   }
-  public function getAlignedQuality()
+
+  public function setBaseQuality($baseQuality)
   {
-    return $this->alignedQuality;
+    $this->baseQuality = $baseQuality;
   }
-  public function setAlignedSequence($alignedSequence)
+
+  public function getBaseQuality()
   {
-    $this->alignedSequence = $alignedSequence;
+    return $this->baseQuality;
   }
-  public function getAlignedSequence()
+
+  public function setCigar($cigar)
   {
-    return $this->alignedSequence;
+    $this->cigar = $cigar;
   }
-  public function setAlignment(Google_Service_Genomics_LinearAlignment $alignment)
+
+  public function getCigar()
   {
-    $this->alignment = $alignment;
+    return $this->cigar;
   }
-  public function getAlignment()
+
+  public function setFlags($flags)
   {
-    return $this->alignment;
+    $this->flags = $flags;
   }
-  public function setDuplicateFragment($duplicateFragment)
+
+  public function getFlags()
   {
-    $this->duplicateFragment = $duplicateFragment;
+    return $this->flags;
   }
-  public function getDuplicateFragment()
-  {
-    return $this->duplicateFragment;
-  }
-  public function setFailedVendorQualityChecks($failedVendorQualityChecks)
-  {
-    $this->failedVendorQualityChecks = $failedVendorQualityChecks;
-  }
-  public function getFailedVendorQualityChecks()
-  {
-    return $this->failedVendorQualityChecks;
-  }
-  public function setFragmentLength($fragmentLength)
-  {
-    $this->fragmentLength = $fragmentLength;
-  }
-  public function getFragmentLength()
-  {
-    return $this->fragmentLength;
-  }
-  public function setFragmentName($fragmentName)
-  {
-    $this->fragmentName = $fragmentName;
-  }
-  public function getFragmentName()
-  {
-    return $this->fragmentName;
-  }
+
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
-  public function setInfo($info)
+
+  public function setMappingQuality($mappingQuality)
   {
-    $this->info = $info;
+    $this->mappingQuality = $mappingQuality;
   }
-  public function getInfo()
+
+  public function getMappingQuality()
   {
-    return $this->info;
+    return $this->mappingQuality;
   }
-  public function setNextMatePosition(Google_Service_Genomics_Position $nextMatePosition)
+
+  public function setMatePosition($matePosition)
   {
-    $this->nextMatePosition = $nextMatePosition;
+    $this->matePosition = $matePosition;
   }
-  public function getNextMatePosition()
+
+  public function getMatePosition()
   {
-    return $this->nextMatePosition;
+    return $this->matePosition;
   }
-  public function setNumberReads($numberReads)
+
+  public function setMateReferenceSequenceName($mateReferenceSequenceName)
   {
-    $this->numberReads = $numberReads;
+    $this->mateReferenceSequenceName = $mateReferenceSequenceName;
   }
-  public function getNumberReads()
+
+  public function getMateReferenceSequenceName()
   {
-    return $this->numberReads;
+    return $this->mateReferenceSequenceName;
   }
-  public function setProperPlacement($properPlacement)
+
+  public function setName($name)
   {
-    $this->properPlacement = $properPlacement;
+    $this->name = $name;
   }
-  public function getProperPlacement()
+
+  public function getName()
   {
-    return $this->properPlacement;
+    return $this->name;
   }
-  public function setReadGroupId($readGroupId)
+
+  public function setOriginalBases($originalBases)
   {
-    $this->readGroupId = $readGroupId;
+    $this->originalBases = $originalBases;
   }
-  public function getReadGroupId()
+
+  public function getOriginalBases()
   {
-    return $this->readGroupId;
+    return $this->originalBases;
   }
-  public function setReadGroupSetId($readGroupSetId)
+
+  public function setPosition($position)
   {
-    $this->readGroupSetId = $readGroupSetId;
+    $this->position = $position;
   }
-  public function getReadGroupSetId()
+
+  public function getPosition()
   {
-    return $this->readGroupSetId;
+    return $this->position;
   }
-  public function setReadNumber($readNumber)
+
+  public function setReadsetId($readsetId)
   {
-    $this->readNumber = $readNumber;
+    $this->readsetId = $readsetId;
   }
-  public function getReadNumber()
+
+  public function getReadsetId()
   {
-    return $this->readNumber;
+    return $this->readsetId;
   }
-  public function setSecondaryAlignment($secondaryAlignment)
+
+  public function setReferenceSequenceName($referenceSequenceName)
   {
-    $this->secondaryAlignment = $secondaryAlignment;
+    $this->referenceSequenceName = $referenceSequenceName;
   }
-  public function getSecondaryAlignment()
+
+  public function getReferenceSequenceName()
   {
-    return $this->secondaryAlignment;
+    return $this->referenceSequenceName;
   }
-  public function setSupplementaryAlignment($supplementaryAlignment)
+
+  public function setTags($tags)
   {
-    $this->supplementaryAlignment = $supplementaryAlignment;
+    $this->tags = $tags;
   }
-  public function getSupplementaryAlignment()
+
+  public function getTags()
   {
-    return $this->supplementaryAlignment;
+    return $this->tags;
+  }
+
+  public function setTemplateLength($templateLength)
+  {
+    $this->templateLength = $templateLength;
+  }
+
+  public function getTemplateLength()
+  {
+    return $this->templateLength;
   }
 }
 
-class Google_Service_Genomics_ReadGroup extends Google_Collection
+class Google_Service_Genomics_ReadGroup extends Google_Model
 {
-  protected $collection_key = 'programs';
   protected $internal_gapi_mappings = array(
   );
-  public $datasetId;
+  public $date;
   public $description;
-  protected $experimentType = 'Google_Service_Genomics_Experiment';
-  protected $experimentDataType = '';
+  public $flowOrder;
   public $id;
-  public $info;
-  public $name;
+  public $keySequence;
+  public $library;
+  public $platformUnit;
   public $predictedInsertSize;
-  protected $programsType = 'Google_Service_Genomics_Program';
-  protected $programsDataType = 'array';
-  public $referenceSetId;
-  public $sampleId;
+  public $processingProgram;
+  public $sample;
+  public $sequencingCenterName;
+  public $sequencingTechnology;
 
+  public function setDate($date)
+  {
+    $this->date = $date;
+  }
 
-  public function setDatasetId($datasetId)
+  public function getDate()
   {
-    $this->datasetId = $datasetId;
+    return $this->date;
   }
-  public function getDatasetId()
-  {
-    return $this->datasetId;
-  }
+
   public function setDescription($description)
   {
     $this->description = $description;
   }
+
   public function getDescription()
   {
     return $this->description;
   }
-  public function setExperiment(Google_Service_Genomics_Experiment $experiment)
+
+  public function setFlowOrder($flowOrder)
   {
-    $this->experiment = $experiment;
+    $this->flowOrder = $flowOrder;
   }
-  public function getExperiment()
+
+  public function getFlowOrder()
   {
-    return $this->experiment;
+    return $this->flowOrder;
   }
+
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
-  public function setInfo($info)
+
+  public function setKeySequence($keySequence)
   {
-    $this->info = $info;
+    $this->keySequence = $keySequence;
   }
-  public function getInfo()
+
+  public function getKeySequence()
   {
-    return $this->info;
+    return $this->keySequence;
   }
-  public function setName($name)
+
+  public function setLibrary($library)
   {
-    $this->name = $name;
+    $this->library = $library;
   }
-  public function getName()
+
+  public function getLibrary()
   {
-    return $this->name;
+    return $this->library;
   }
+
+  public function setPlatformUnit($platformUnit)
+  {
+    $this->platformUnit = $platformUnit;
+  }
+
+  public function getPlatformUnit()
+  {
+    return $this->platformUnit;
+  }
+
   public function setPredictedInsertSize($predictedInsertSize)
   {
     $this->predictedInsertSize = $predictedInsertSize;
   }
+
   public function getPredictedInsertSize()
   {
     return $this->predictedInsertSize;
   }
-  public function setPrograms($programs)
+
+  public function setProcessingProgram($processingProgram)
   {
-    $this->programs = $programs;
+    $this->processingProgram = $processingProgram;
   }
-  public function getPrograms()
+
+  public function getProcessingProgram()
   {
-    return $this->programs;
+    return $this->processingProgram;
   }
-  public function setReferenceSetId($referenceSetId)
+
+  public function setSample($sample)
   {
-    $this->referenceSetId = $referenceSetId;
+    $this->sample = $sample;
   }
-  public function getReferenceSetId()
+
+  public function getSample()
   {
-    return $this->referenceSetId;
+    return $this->sample;
   }
-  public function setSampleId($sampleId)
+
+  public function setSequencingCenterName($sequencingCenterName)
   {
-    $this->sampleId = $sampleId;
+    $this->sequencingCenterName = $sequencingCenterName;
   }
-  public function getSampleId()
+
+  public function getSequencingCenterName()
   {
-    return $this->sampleId;
+    return $this->sequencingCenterName;
+  }
+
+  public function setSequencingTechnology($sequencingTechnology)
+  {
+    $this->sequencingTechnology = $sequencingTechnology;
+  }
+
+  public function getSequencingTechnology()
+  {
+    return $this->sequencingTechnology;
   }
 }
 
-class Google_Service_Genomics_ReadGroupInfo extends Google_Model
+class Google_Service_Genomics_ReadTags extends Google_Model
 {
+  protected $internal_gapi_mappings = array(
+  );
 }
 
-class Google_Service_Genomics_ReadGroupSet extends Google_Collection
+class Google_Service_Genomics_Readset extends Google_Collection
 {
-  protected $collection_key = 'readGroups';
+  protected $collection_key = 'fileData';
   protected $internal_gapi_mappings = array(
   );
   public $datasetId;
-  public $filename;
+  protected $fileDataType = 'Google_Service_Genomics_HeaderSection';
+  protected $fileDataDataType = 'array';
   public $id;
-  public $info;
   public $name;
-  protected $readGroupsType = 'Google_Service_Genomics_ReadGroup';
-  protected $readGroupsDataType = 'array';
-  public $referenceSetId;
-
 
   public function setDatasetId($datasetId)
   {
     $this->datasetId = $datasetId;
   }
+
   public function getDatasetId()
   {
     return $this->datasetId;
   }
-  public function setFilename($filename)
-  {
-    $this->filename = $filename;
-  }
-  public function getFilename()
-  {
-    return $this->filename;
-  }
-  public function setId($id)
-  {
-    $this->id = $id;
-  }
-  public function getId()
-  {
-    return $this->id;
-  }
-  public function setInfo($info)
-  {
-    $this->info = $info;
-  }
-  public function getInfo()
-  {
-    return $this->info;
-  }
-  public function setName($name)
-  {
-    $this->name = $name;
-  }
-  public function getName()
-  {
-    return $this->name;
-  }
-  public function setReadGroups($readGroups)
-  {
-    $this->readGroups = $readGroups;
-  }
-  public function getReadGroups()
-  {
-    return $this->readGroups;
-  }
-  public function setReferenceSetId($referenceSetId)
-  {
-    $this->referenceSetId = $referenceSetId;
-  }
-  public function getReferenceSetId()
-  {
-    return $this->referenceSetId;
-  }
-}
 
-class Google_Service_Genomics_ReadGroupSetInfo extends Google_Model
-{
-}
+  public function setFileData($fileData)
+  {
+    $this->fileData = $fileData;
+  }
 
-class Google_Service_Genomics_ReadInfo extends Google_Model
-{
-}
-
-class Google_Service_Genomics_Reference extends Google_Collection
-{
-  protected $collection_key = 'sourceAccessions';
-  protected $internal_gapi_mappings = array(
-  );
-  public $id;
-  public $length;
-  public $md5checksum;
-  public $name;
-  public $ncbiTaxonId;
-  public $sourceAccessions;
-  public $sourceUri;
-
+  public function getFileData()
+  {
+    return $this->fileData;
+  }
 
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
-  public function setLength($length)
-  {
-    $this->length = $length;
-  }
-  public function getLength()
-  {
-    return $this->length;
-  }
-  public function setMd5checksum($md5checksum)
-  {
-    $this->md5checksum = $md5checksum;
-  }
-  public function getMd5checksum()
-  {
-    return $this->md5checksum;
-  }
+
   public function setName($name)
   {
     $this->name = $name;
   }
+
   public function getName()
   {
     return $this->name;
-  }
-  public function setNcbiTaxonId($ncbiTaxonId)
-  {
-    $this->ncbiTaxonId = $ncbiTaxonId;
-  }
-  public function getNcbiTaxonId()
-  {
-    return $this->ncbiTaxonId;
-  }
-  public function setSourceAccessions($sourceAccessions)
-  {
-    $this->sourceAccessions = $sourceAccessions;
-  }
-  public function getSourceAccessions()
-  {
-    return $this->sourceAccessions;
-  }
-  public function setSourceUri($sourceUri)
-  {
-    $this->sourceUri = $sourceUri;
-  }
-  public function getSourceUri()
-  {
-    return $this->sourceUri;
   }
 }
 
@@ -2879,103 +2807,96 @@ class Google_Service_Genomics_ReferenceBound extends Google_Model
   public $referenceName;
   public $upperBound;
 
-
   public function setReferenceName($referenceName)
   {
     $this->referenceName = $referenceName;
   }
+
   public function getReferenceName()
   {
     return $this->referenceName;
   }
+
   public function setUpperBound($upperBound)
   {
     $this->upperBound = $upperBound;
   }
+
   public function getUpperBound()
   {
     return $this->upperBound;
   }
 }
 
-class Google_Service_Genomics_ReferenceSet extends Google_Collection
+class Google_Service_Genomics_ReferenceSequence extends Google_Model
 {
-  protected $collection_key = 'sourceAccessions';
   protected $internal_gapi_mappings = array(
   );
   public $assemblyId;
-  public $description;
-  public $id;
-  public $md5checksum;
-  public $ncbiTaxonId;
-  public $referenceIds;
-  public $sourceAccessions;
-  public $sourceUri;
-
+  public $length;
+  public $md5Checksum;
+  public $name;
+  public $species;
+  public $uri;
 
   public function setAssemblyId($assemblyId)
   {
     $this->assemblyId = $assemblyId;
   }
+
   public function getAssemblyId()
   {
     return $this->assemblyId;
   }
-  public function setDescription($description)
+
+  public function setLength($length)
   {
-    $this->description = $description;
+    $this->length = $length;
   }
-  public function getDescription()
+
+  public function getLength()
   {
-    return $this->description;
+    return $this->length;
   }
-  public function setId($id)
+
+  public function setMd5Checksum($md5Checksum)
   {
-    $this->id = $id;
+    $this->md5Checksum = $md5Checksum;
   }
-  public function getId()
+
+  public function getMd5Checksum()
   {
-    return $this->id;
+    return $this->md5Checksum;
   }
-  public function setMd5checksum($md5checksum)
+
+  public function setName($name)
   {
-    $this->md5checksum = $md5checksum;
+    $this->name = $name;
   }
-  public function getMd5checksum()
+
+  public function getName()
   {
-    return $this->md5checksum;
+    return $this->name;
   }
-  public function setNcbiTaxonId($ncbiTaxonId)
+
+  public function setSpecies($species)
   {
-    $this->ncbiTaxonId = $ncbiTaxonId;
+    $this->species = $species;
   }
-  public function getNcbiTaxonId()
+
+  public function getSpecies()
   {
-    return $this->ncbiTaxonId;
+    return $this->species;
   }
-  public function setReferenceIds($referenceIds)
+
+  public function setUri($uri)
   {
-    $this->referenceIds = $referenceIds;
+    $this->uri = $uri;
   }
-  public function getReferenceIds()
+
+  public function getUri()
   {
-    return $this->referenceIds;
-  }
-  public function setSourceAccessions($sourceAccessions)
-  {
-    $this->sourceAccessions = $sourceAccessions;
-  }
-  public function getSourceAccessions()
-  {
-    return $this->sourceAccessions;
-  }
-  public function setSourceUri($sourceUri)
-  {
-    $this->sourceUri = $sourceUri;
-  }
-  public function getSourceUri()
-  {
-    return $this->sourceUri;
+    return $this->uri;
   }
 }
 
@@ -2989,35 +2910,41 @@ class Google_Service_Genomics_SearchCallSetsRequest extends Google_Collection
   public $pageToken;
   public $variantSetIds;
 
-
   public function setName($name)
   {
     $this->name = $name;
   }
+
   public function getName()
   {
     return $this->name;
   }
+
   public function setPageSize($pageSize)
   {
     $this->pageSize = $pageSize;
   }
+
   public function getPageSize()
   {
     return $this->pageSize;
   }
+
   public function setPageToken($pageToken)
   {
     $this->pageToken = $pageToken;
   }
+
   public function getPageToken()
   {
     return $this->pageToken;
   }
+
   public function setVariantSetIds($variantSetIds)
   {
     $this->variantSetIds = $variantSetIds;
   }
+
   public function getVariantSetIds()
   {
     return $this->variantSetIds;
@@ -3033,359 +2960,311 @@ class Google_Service_Genomics_SearchCallSetsResponse extends Google_Collection
   protected $callSetsDataType = 'array';
   public $nextPageToken;
 
-
   public function setCallSets($callSets)
   {
     $this->callSets = $callSets;
   }
+
   public function getCallSets()
   {
     return $this->callSets;
   }
+
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
   }
 }
 
-class Google_Service_Genomics_SearchReadGroupSetsRequest extends Google_Collection
+class Google_Service_Genomics_SearchJobsRequest extends Google_Collection
 {
-  protected $collection_key = 'datasetIds';
+  protected $collection_key = 'status';
   protected $internal_gapi_mappings = array(
   );
-  public $datasetIds;
-  public $name;
-  public $pageSize;
+  public $createdAfter;
+  public $createdBefore;
+  public $maxResults;
   public $pageToken;
+  public $projectId;
+  public $status;
 
+  public function setCreatedAfter($createdAfter)
+  {
+    $this->createdAfter = $createdAfter;
+  }
 
-  public function setDatasetIds($datasetIds)
+  public function getCreatedAfter()
   {
-    $this->datasetIds = $datasetIds;
+    return $this->createdAfter;
   }
-  public function getDatasetIds()
+
+  public function setCreatedBefore($createdBefore)
   {
-    return $this->datasetIds;
+    $this->createdBefore = $createdBefore;
   }
-  public function setName($name)
+
+  public function getCreatedBefore()
   {
-    $this->name = $name;
+    return $this->createdBefore;
   }
-  public function getName()
+
+  public function setMaxResults($maxResults)
   {
-    return $this->name;
+    $this->maxResults = $maxResults;
   }
-  public function setPageSize($pageSize)
+
+  public function getMaxResults()
   {
-    $this->pageSize = $pageSize;
+    return $this->maxResults;
   }
-  public function getPageSize()
-  {
-    return $this->pageSize;
-  }
+
   public function setPageToken($pageToken)
   {
     $this->pageToken = $pageToken;
   }
+
   public function getPageToken()
   {
     return $this->pageToken;
   }
+
+  public function setProjectId($projectId)
+  {
+    $this->projectId = $projectId;
+  }
+
+  public function getProjectId()
+  {
+    return $this->projectId;
+  }
+
+  public function setStatus($status)
+  {
+    $this->status = $status;
+  }
+
+  public function getStatus()
+  {
+    return $this->status;
+  }
 }
 
-class Google_Service_Genomics_SearchReadGroupSetsResponse extends Google_Collection
+class Google_Service_Genomics_SearchJobsResponse extends Google_Collection
 {
-  protected $collection_key = 'readGroupSets';
+  protected $collection_key = 'jobs';
   protected $internal_gapi_mappings = array(
   );
+  protected $jobsType = 'Google_Service_Genomics_Job';
+  protected $jobsDataType = 'array';
   public $nextPageToken;
-  protected $readGroupSetsType = 'Google_Service_Genomics_ReadGroupSet';
-  protected $readGroupSetsDataType = 'array';
 
+  public function setJobs($jobs)
+  {
+    $this->jobs = $jobs;
+  }
+
+  public function getJobs()
+  {
+    return $this->jobs;
+  }
 
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
-  }
-  public function setReadGroupSets($readGroupSets)
-  {
-    $this->readGroupSets = $readGroupSets;
-  }
-  public function getReadGroupSets()
-  {
-    return $this->readGroupSets;
   }
 }
 
 class Google_Service_Genomics_SearchReadsRequest extends Google_Collection
 {
-  protected $collection_key = 'readGroupSetIds';
+  protected $collection_key = 'readsetIds';
   protected $internal_gapi_mappings = array(
   );
-  public $end;
-  public $pageSize;
+  public $maxResults;
   public $pageToken;
-  public $readGroupIds;
-  public $readGroupSetIds;
-  public $referenceName;
-  public $start;
+  public $readsetIds;
+  public $sequenceEnd;
+  public $sequenceName;
+  public $sequenceStart;
 
+  public function setMaxResults($maxResults)
+  {
+    $this->maxResults = $maxResults;
+  }
 
-  public function setEnd($end)
+  public function getMaxResults()
   {
-    $this->end = $end;
+    return $this->maxResults;
   }
-  public function getEnd()
-  {
-    return $this->end;
-  }
-  public function setPageSize($pageSize)
-  {
-    $this->pageSize = $pageSize;
-  }
-  public function getPageSize()
-  {
-    return $this->pageSize;
-  }
+
   public function setPageToken($pageToken)
   {
     $this->pageToken = $pageToken;
   }
+
   public function getPageToken()
   {
     return $this->pageToken;
   }
-  public function setReadGroupIds($readGroupIds)
+
+  public function setReadsetIds($readsetIds)
   {
-    $this->readGroupIds = $readGroupIds;
+    $this->readsetIds = $readsetIds;
   }
-  public function getReadGroupIds()
+
+  public function getReadsetIds()
   {
-    return $this->readGroupIds;
+    return $this->readsetIds;
   }
-  public function setReadGroupSetIds($readGroupSetIds)
+
+  public function setSequenceEnd($sequenceEnd)
   {
-    $this->readGroupSetIds = $readGroupSetIds;
+    $this->sequenceEnd = $sequenceEnd;
   }
-  public function getReadGroupSetIds()
+
+  public function getSequenceEnd()
   {
-    return $this->readGroupSetIds;
+    return $this->sequenceEnd;
   }
-  public function setReferenceName($referenceName)
+
+  public function setSequenceName($sequenceName)
   {
-    $this->referenceName = $referenceName;
+    $this->sequenceName = $sequenceName;
   }
-  public function getReferenceName()
+
+  public function getSequenceName()
   {
-    return $this->referenceName;
+    return $this->sequenceName;
   }
-  public function setStart($start)
+
+  public function setSequenceStart($sequenceStart)
   {
-    $this->start = $start;
+    $this->sequenceStart = $sequenceStart;
   }
-  public function getStart()
+
+  public function getSequenceStart()
   {
-    return $this->start;
+    return $this->sequenceStart;
   }
 }
 
 class Google_Service_Genomics_SearchReadsResponse extends Google_Collection
 {
-  protected $collection_key = 'alignments';
+  protected $collection_key = 'reads';
   protected $internal_gapi_mappings = array(
   );
-  protected $alignmentsType = 'Google_Service_Genomics_Read';
-  protected $alignmentsDataType = 'array';
   public $nextPageToken;
+  protected $readsType = 'Google_Service_Genomics_Read';
+  protected $readsDataType = 'array';
 
-
-  public function setAlignments($alignments)
-  {
-    $this->alignments = $alignments;
-  }
-  public function getAlignments()
-  {
-    return $this->alignments;
-  }
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
   }
+
+  public function setReads($reads)
+  {
+    $this->reads = $reads;
+  }
+
+  public function getReads()
+  {
+    return $this->reads;
+  }
 }
 
-class Google_Service_Genomics_SearchReferenceSetsRequest extends Google_Collection
+class Google_Service_Genomics_SearchReadsetsRequest extends Google_Collection
 {
-  protected $collection_key = 'md5checksums';
+  protected $collection_key = 'datasetIds';
   protected $internal_gapi_mappings = array(
   );
-  public $accessions;
-  public $assemblyId;
-  public $md5checksums;
-  public $pageSize;
+  public $datasetIds;
+  public $maxResults;
+  public $name;
   public $pageToken;
 
+  public function setDatasetIds($datasetIds)
+  {
+    $this->datasetIds = $datasetIds;
+  }
 
-  public function setAccessions($accessions)
+  public function getDatasetIds()
   {
-    $this->accessions = $accessions;
+    return $this->datasetIds;
   }
-  public function getAccessions()
+
+  public function setMaxResults($maxResults)
   {
-    return $this->accessions;
+    $this->maxResults = $maxResults;
   }
-  public function setAssemblyId($assemblyId)
+
+  public function getMaxResults()
   {
-    $this->assemblyId = $assemblyId;
+    return $this->maxResults;
   }
-  public function getAssemblyId()
+
+  public function setName($name)
   {
-    return $this->assemblyId;
+    $this->name = $name;
   }
-  public function setMd5checksums($md5checksums)
+
+  public function getName()
   {
-    $this->md5checksums = $md5checksums;
+    return $this->name;
   }
-  public function getMd5checksums()
-  {
-    return $this->md5checksums;
-  }
-  public function setPageSize($pageSize)
-  {
-    $this->pageSize = $pageSize;
-  }
-  public function getPageSize()
-  {
-    return $this->pageSize;
-  }
+
   public function setPageToken($pageToken)
   {
     $this->pageToken = $pageToken;
   }
+
   public function getPageToken()
   {
     return $this->pageToken;
   }
 }
 
-class Google_Service_Genomics_SearchReferenceSetsResponse extends Google_Collection
+class Google_Service_Genomics_SearchReadsetsResponse extends Google_Collection
 {
-  protected $collection_key = 'referenceSets';
+  protected $collection_key = 'readsets';
   protected $internal_gapi_mappings = array(
   );
   public $nextPageToken;
-  protected $referenceSetsType = 'Google_Service_Genomics_ReferenceSet';
-  protected $referenceSetsDataType = 'array';
-
+  protected $readsetsType = 'Google_Service_Genomics_Readset';
+  protected $readsetsDataType = 'array';
 
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
   }
-  public function setReferenceSets($referenceSets)
-  {
-    $this->referenceSets = $referenceSets;
-  }
-  public function getReferenceSets()
-  {
-    return $this->referenceSets;
-  }
-}
 
-class Google_Service_Genomics_SearchReferencesRequest extends Google_Collection
-{
-  protected $collection_key = 'md5checksums';
-  protected $internal_gapi_mappings = array(
-  );
-  public $accessions;
-  public $md5checksums;
-  public $pageSize;
-  public $pageToken;
-  public $referenceSetId;
+  public function setReadsets($readsets)
+  {
+    $this->readsets = $readsets;
+  }
 
-
-  public function setAccessions($accessions)
+  public function getReadsets()
   {
-    $this->accessions = $accessions;
-  }
-  public function getAccessions()
-  {
-    return $this->accessions;
-  }
-  public function setMd5checksums($md5checksums)
-  {
-    $this->md5checksums = $md5checksums;
-  }
-  public function getMd5checksums()
-  {
-    return $this->md5checksums;
-  }
-  public function setPageSize($pageSize)
-  {
-    $this->pageSize = $pageSize;
-  }
-  public function getPageSize()
-  {
-    return $this->pageSize;
-  }
-  public function setPageToken($pageToken)
-  {
-    $this->pageToken = $pageToken;
-  }
-  public function getPageToken()
-  {
-    return $this->pageToken;
-  }
-  public function setReferenceSetId($referenceSetId)
-  {
-    $this->referenceSetId = $referenceSetId;
-  }
-  public function getReferenceSetId()
-  {
-    return $this->referenceSetId;
-  }
-}
-
-class Google_Service_Genomics_SearchReferencesResponse extends Google_Collection
-{
-  protected $collection_key = 'references';
-  protected $internal_gapi_mappings = array(
-  );
-  public $nextPageToken;
-  protected $referencesType = 'Google_Service_Genomics_Reference';
-  protected $referencesDataType = 'array';
-
-
-  public function setNextPageToken($nextPageToken)
-  {
-    $this->nextPageToken = $nextPageToken;
-  }
-  public function getNextPageToken()
-  {
-    return $this->nextPageToken;
-  }
-  public function setReferences($references)
-  {
-    $this->references = $references;
-  }
-  public function getReferences()
-  {
-    return $this->references;
+    return $this->readsets;
   }
 }
 
@@ -3398,27 +3277,31 @@ class Google_Service_Genomics_SearchVariantSetsRequest extends Google_Collection
   public $pageSize;
   public $pageToken;
 
-
   public function setDatasetIds($datasetIds)
   {
     $this->datasetIds = $datasetIds;
   }
+
   public function getDatasetIds()
   {
     return $this->datasetIds;
   }
+
   public function setPageSize($pageSize)
   {
     $this->pageSize = $pageSize;
   }
+
   public function getPageSize()
   {
     return $this->pageSize;
   }
+
   public function setPageToken($pageToken)
   {
     $this->pageToken = $pageToken;
   }
+
   public function getPageToken()
   {
     return $this->pageToken;
@@ -3434,19 +3317,21 @@ class Google_Service_Genomics_SearchVariantSetsResponse extends Google_Collectio
   protected $variantSetsType = 'Google_Service_Genomics_VariantSet';
   protected $variantSetsDataType = 'array';
 
-
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
   }
+
   public function setVariantSets($variantSets)
   {
     $this->variantSets = $variantSets;
   }
+
   public function getVariantSets()
   {
     return $this->variantSets;
@@ -3468,75 +3353,91 @@ class Google_Service_Genomics_SearchVariantsRequest extends Google_Collection
   public $variantName;
   public $variantSetIds;
 
-
   public function setCallSetIds($callSetIds)
   {
     $this->callSetIds = $callSetIds;
   }
+
   public function getCallSetIds()
   {
     return $this->callSetIds;
   }
+
   public function setEnd($end)
   {
     $this->end = $end;
   }
+
   public function getEnd()
   {
     return $this->end;
   }
+
   public function setMaxCalls($maxCalls)
   {
     $this->maxCalls = $maxCalls;
   }
+
   public function getMaxCalls()
   {
     return $this->maxCalls;
   }
+
   public function setPageSize($pageSize)
   {
     $this->pageSize = $pageSize;
   }
+
   public function getPageSize()
   {
     return $this->pageSize;
   }
+
   public function setPageToken($pageToken)
   {
     $this->pageToken = $pageToken;
   }
+
   public function getPageToken()
   {
     return $this->pageToken;
   }
+
   public function setReferenceName($referenceName)
   {
     $this->referenceName = $referenceName;
   }
+
   public function getReferenceName()
   {
     return $this->referenceName;
   }
+
   public function setStart($start)
   {
     $this->start = $start;
   }
+
   public function getStart()
   {
     return $this->start;
   }
+
   public function setVariantName($variantName)
   {
     $this->variantName = $variantName;
   }
+
   public function getVariantName()
   {
     return $this->variantName;
   }
+
   public function setVariantSetIds($variantSetIds)
   {
     $this->variantSetIds = $variantSetIds;
   }
+
   public function getVariantSetIds()
   {
     return $this->variantSetIds;
@@ -3552,121 +3453,25 @@ class Google_Service_Genomics_SearchVariantsResponse extends Google_Collection
   protected $variantsType = 'Google_Service_Genomics_Variant';
   protected $variantsDataType = 'array';
 
-
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
+
   public function getNextPageToken()
   {
     return $this->nextPageToken;
   }
+
   public function setVariants($variants)
   {
     $this->variants = $variants;
   }
+
   public function getVariants()
   {
     return $this->variants;
   }
-}
-
-class Google_Service_Genomics_SetIamPolicyRequest extends Google_Model
-{
-  protected $internal_gapi_mappings = array(
-  );
-  protected $policyType = 'Google_Service_Genomics_Policy';
-  protected $policyDataType = '';
-
-
-  public function setPolicy(Google_Service_Genomics_Policy $policy)
-  {
-    $this->policy = $policy;
-  }
-  public function getPolicy()
-  {
-    return $this->policy;
-  }
-}
-
-class Google_Service_Genomics_Status extends Google_Collection
-{
-  protected $collection_key = 'details';
-  protected $internal_gapi_mappings = array(
-  );
-  public $code;
-  public $details;
-  public $message;
-
-
-  public function setCode($code)
-  {
-    $this->code = $code;
-  }
-  public function getCode()
-  {
-    return $this->code;
-  }
-  public function setDetails($details)
-  {
-    $this->details = $details;
-  }
-  public function getDetails()
-  {
-    return $this->details;
-  }
-  public function setMessage($message)
-  {
-    $this->message = $message;
-  }
-  public function getMessage()
-  {
-    return $this->message;
-  }
-}
-
-class Google_Service_Genomics_StatusDetails extends Google_Model
-{
-}
-
-class Google_Service_Genomics_TestIamPermissionsRequest extends Google_Collection
-{
-  protected $collection_key = 'permissions';
-  protected $internal_gapi_mappings = array(
-  );
-  public $permissions;
-
-
-  public function setPermissions($permissions)
-  {
-    $this->permissions = $permissions;
-  }
-  public function getPermissions()
-  {
-    return $this->permissions;
-  }
-}
-
-class Google_Service_Genomics_TestIamPermissionsResponse extends Google_Collection
-{
-  protected $collection_key = 'permissions';
-  protected $internal_gapi_mappings = array(
-  );
-  public $permissions;
-
-
-  public function setPermissions($permissions)
-  {
-    $this->permissions = $permissions;
-  }
-  public function getPermissions()
-  {
-    return $this->permissions;
-  }
-}
-
-class Google_Service_Genomics_UndeleteDatasetRequest extends Google_Model
-{
 }
 
 class Google_Service_Genomics_Variant extends Google_Collection
@@ -3675,7 +3480,7 @@ class Google_Service_Genomics_Variant extends Google_Collection
   protected $internal_gapi_mappings = array(
   );
   public $alternateBases;
-  protected $callsType = 'Google_Service_Genomics_VariantCall';
+  protected $callsType = 'Google_Service_Genomics_Call';
   protected $callsDataType = 'array';
   public $created;
   public $end;
@@ -3689,182 +3494,141 @@ class Google_Service_Genomics_Variant extends Google_Collection
   public $start;
   public $variantSetId;
 
-
   public function setAlternateBases($alternateBases)
   {
     $this->alternateBases = $alternateBases;
   }
+
   public function getAlternateBases()
   {
     return $this->alternateBases;
   }
+
   public function setCalls($calls)
   {
     $this->calls = $calls;
   }
+
   public function getCalls()
   {
     return $this->calls;
   }
+
   public function setCreated($created)
   {
     $this->created = $created;
   }
+
   public function getCreated()
   {
     return $this->created;
   }
+
   public function setEnd($end)
   {
     $this->end = $end;
   }
+
   public function getEnd()
   {
     return $this->end;
   }
+
   public function setFilter($filter)
   {
     $this->filter = $filter;
   }
+
   public function getFilter()
   {
     return $this->filter;
   }
+
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
+
   public function setInfo($info)
   {
     $this->info = $info;
   }
+
   public function getInfo()
   {
     return $this->info;
   }
+
   public function setNames($names)
   {
     $this->names = $names;
   }
+
   public function getNames()
   {
     return $this->names;
   }
+
   public function setQuality($quality)
   {
     $this->quality = $quality;
   }
+
   public function getQuality()
   {
     return $this->quality;
   }
+
   public function setReferenceBases($referenceBases)
   {
     $this->referenceBases = $referenceBases;
   }
+
   public function getReferenceBases()
   {
     return $this->referenceBases;
   }
+
   public function setReferenceName($referenceName)
   {
     $this->referenceName = $referenceName;
   }
+
   public function getReferenceName()
   {
     return $this->referenceName;
   }
+
   public function setStart($start)
   {
     $this->start = $start;
   }
+
   public function getStart()
   {
     return $this->start;
   }
+
   public function setVariantSetId($variantSetId)
   {
     $this->variantSetId = $variantSetId;
   }
+
   public function getVariantSetId()
   {
     return $this->variantSetId;
   }
 }
 
-class Google_Service_Genomics_VariantCall extends Google_Collection
-{
-  protected $collection_key = 'genotypeLikelihood';
-  protected $internal_gapi_mappings = array(
-  );
-  public $callSetId;
-  public $callSetName;
-  public $genotype;
-  public $genotypeLikelihood;
-  public $info;
-  public $phaseset;
-
-
-  public function setCallSetId($callSetId)
-  {
-    $this->callSetId = $callSetId;
-  }
-  public function getCallSetId()
-  {
-    return $this->callSetId;
-  }
-  public function setCallSetName($callSetName)
-  {
-    $this->callSetName = $callSetName;
-  }
-  public function getCallSetName()
-  {
-    return $this->callSetName;
-  }
-  public function setGenotype($genotype)
-  {
-    $this->genotype = $genotype;
-  }
-  public function getGenotype()
-  {
-    return $this->genotype;
-  }
-  public function setGenotypeLikelihood($genotypeLikelihood)
-  {
-    $this->genotypeLikelihood = $genotypeLikelihood;
-  }
-  public function getGenotypeLikelihood()
-  {
-    return $this->genotypeLikelihood;
-  }
-  public function setInfo($info)
-  {
-    $this->info = $info;
-  }
-  public function getInfo()
-  {
-    return $this->info;
-  }
-  public function setPhaseset($phaseset)
-  {
-    $this->phaseset = $phaseset;
-  }
-  public function getPhaseset()
-  {
-    return $this->phaseset;
-  }
-}
-
-class Google_Service_Genomics_VariantCallInfo extends Google_Model
-{
-}
-
 class Google_Service_Genomics_VariantInfo extends Google_Model
 {
+  protected $internal_gapi_mappings = array(
+  );
 }
 
 class Google_Service_Genomics_VariantSet extends Google_Collection
@@ -3874,117 +3638,48 @@ class Google_Service_Genomics_VariantSet extends Google_Collection
   );
   public $datasetId;
   public $id;
-  protected $metadataType = 'Google_Service_Genomics_VariantSetMetadata';
+  protected $metadataType = 'Google_Service_Genomics_Metadata';
   protected $metadataDataType = 'array';
   protected $referenceBoundsType = 'Google_Service_Genomics_ReferenceBound';
   protected $referenceBoundsDataType = 'array';
-
 
   public function setDatasetId($datasetId)
   {
     $this->datasetId = $datasetId;
   }
+
   public function getDatasetId()
   {
     return $this->datasetId;
   }
+
   public function setId($id)
   {
     $this->id = $id;
   }
+
   public function getId()
   {
     return $this->id;
   }
+
   public function setMetadata($metadata)
   {
     $this->metadata = $metadata;
   }
+
   public function getMetadata()
   {
     return $this->metadata;
   }
+
   public function setReferenceBounds($referenceBounds)
   {
     $this->referenceBounds = $referenceBounds;
   }
+
   public function getReferenceBounds()
   {
     return $this->referenceBounds;
   }
-}
-
-class Google_Service_Genomics_VariantSetMetadata extends Google_Model
-{
-  protected $internal_gapi_mappings = array(
-  );
-  public $description;
-  public $id;
-  public $info;
-  public $key;
-  public $number;
-  public $type;
-  public $value;
-
-
-  public function setDescription($description)
-  {
-    $this->description = $description;
-  }
-  public function getDescription()
-  {
-    return $this->description;
-  }
-  public function setId($id)
-  {
-    $this->id = $id;
-  }
-  public function getId()
-  {
-    return $this->id;
-  }
-  public function setInfo($info)
-  {
-    $this->info = $info;
-  }
-  public function getInfo()
-  {
-    return $this->info;
-  }
-  public function setKey($key)
-  {
-    $this->key = $key;
-  }
-  public function getKey()
-  {
-    return $this->key;
-  }
-  public function setNumber($number)
-  {
-    $this->number = $number;
-  }
-  public function getNumber()
-  {
-    return $this->number;
-  }
-  public function setType($type)
-  {
-    $this->type = $type;
-  }
-  public function getType()
-  {
-    return $this->type;
-  }
-  public function setValue($value)
-  {
-    $this->value = $value;
-  }
-  public function getValue()
-  {
-    return $this->value;
-  }
-}
-
-class Google_Service_Genomics_VariantSetMetadataInfo extends Google_Model
-{
 }

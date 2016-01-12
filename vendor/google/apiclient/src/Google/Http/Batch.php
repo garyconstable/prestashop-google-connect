@@ -15,24 +15,15 @@
  * limitations under the License.
  */
 
-use GuzzleHttp\Message\Request;
-use GuzzleHttp\Message\Response;
-use GuzzleHttp\Message\RequestInterface;
-use GuzzleHttp\Message\ResponseInterface;
-use GuzzleHttp\Stream\Stream;
+require_once 'Google/Client.php';
+require_once 'Google/Http/Request.php';
+require_once 'Google/Http/REST.php';
 
 /**
- * Class to handle batched requests to the Google API service.
+ * @author Chirag Shah <chirags@google.com>
  */
 class Google_Http_Batch
 {
-  const BATCH_PATH = 'batch';
-
-  private static $CONNECTION_ESTABLISHED_HEADERS = array(
-    "HTTP/1.0 200 Connection established\r\n\r\n",
-    "HTTP/1.1 200 Connection established\r\n\r\n",
-  );
-
   /** @var string Multipart Boundary. */
   private $boundary;
 
@@ -42,13 +33,20 @@ class Google_Http_Batch
   /** @var Google_Client */
   private $client;
 
-  public function __construct(Google_Client $client)
+  private $expected_classes = array();
+
+  private $base_path;
+
+  public function __construct(Google_Client $client, $boundary = false)
   {
     $this->client = $client;
-    $this->boundary = mt_rand();
+    $this->base_path = $this->client->getBasePath();
+    $this->expected_classes = array();
+    $boundary = (false == $boundary) ? mt_rand() : $boundary;
+    $this->boundary = str_replace('"', '', $boundary);
   }
 
-  public function add(RequestInterface $request, $key = false)
+  public function add(Google_Http_Request $request, $key = false)
   {
     if (false == $key) {
       $key = mt_rand();
@@ -60,67 +58,32 @@ class Google_Http_Batch
   public function execute()
   {
     $body = '';
-    $classes = array();
-    $batchHttpTemplate = <<<EOF
---%s
-Content-Type: application/http
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-Content-ID: %s
-
-%s%s
-%s
-
-
-EOF;
 
     /** @var Google_Http_Request $req */
-    foreach ($this->requests as $key => $request) {
-      $firstLine = sprintf(
-          '%s %s HTTP/%s',
-          $request->getMethod(),
-          $request->getResource(),
-          $request->getProtocolVersion()
-      );
-
-      $content = (string) $request->getBody();
-
-      $body .= sprintf(
-          $batchHttpTemplate,
-          $this->boundary,
-          $key,
-          $firstLine,
-          Request::getHeadersAsString($request),
-          $content ? "\n".$content : ''
-      );
-
-      $classes['response-' . $key] = $request->getHeader('X-Php-Expected-Class');
+    foreach ($this->requests as $key => $req) {
+      $body .= "--{$this->boundary}\n";
+      $body .= $req->toBatchString($key) . "\n";
+      $this->expected_classes["response-" . $key] = $req->getExpectedClass();
     }
 
-    $body .= "--{$this->boundary}--";
-    $body = trim($body);
-    $url = Google_Client::API_BASE_PATH . '/' . self::BATCH_PATH;
-    $headers = array(
-      'Content-Type' => sprintf('multipart/mixed; boundary=%s', $this->boundary),
-      'Content-Length' => strlen($body),
-    );
-    $request = $this->client->getHttpClient()->createRequest(
-        'POST',
-        $url,
-        [
-        'headers' => $headers,
-        'body' => Stream::factory($body),
-        ]
+    $body = rtrim($body);
+    $body .= "\n--{$this->boundary}--";
+
+    $url = $this->base_path . '/batch';
+    $httpRequest = new Google_Http_Request($url, 'POST');
+    $httpRequest->setRequestHeaders(
+        array('Content-Type' => 'multipart/mixed; boundary=' . $this->boundary)
     );
 
-    $response = $this->client->getHttpClient()->send($request);
+    $httpRequest->setPostBody($body);
+    $response = $this->client->getIo()->makeRequest($httpRequest);
 
-    return $this->parseResponse($response, $classes);
+    return $this->parseResponse($response);
   }
 
-  public function parseResponse(ResponseInterface $response, $classes = array())
+  public function parseResponse(Google_Http_Request $response)
   {
-    $contentType = $response->getHeader('content-type');
+    $contentType = $response->getResponseHeader('content-type');
     $contentType = explode(';', $contentType);
     $boundary = false;
     foreach ($contentType as $part) {
@@ -130,48 +93,45 @@ EOF;
       }
     }
 
-    $body = (string) $response->getBody();
-    if (!empty($body)) {
+    $body = $response->getResponseBody();
+    if ($body) {
       $body = str_replace("--$boundary--", "--$boundary", $body);
       $parts = explode("--$boundary", $body);
       $responses = array();
 
-      foreach ($parts as $i => $part) {
+      foreach ($parts as $part) {
         $part = trim($part);
         if (!empty($part)) {
-          list($rawHeaders, $part) = explode("\r\n\r\n", $part, 2);
-          $headers = $this->parseRawHeaders($rawHeaders);
+          list($metaHeaders, $part) = explode("\r\n\r\n", $part, 2);
+          $metaHeaders = $this->client->getIo()->getHttpResponseHeaders($metaHeaders);
 
           $status = substr($part, 0, strpos($part, "\n"));
           $status = explode(" ", $status);
           $status = $status[1];
 
-          list($partHeaders, $partBody) = $this->parseHttpResponse($part, false);
-          $response = new Response(
-              $status,
-              $partHeaders,
-              Stream::factory($partBody)
-          );
+          list($partHeaders, $partBody) = $this->client->getIo()->ParseHttpResponse($part, false);
+          $response = new Google_Http_Request("");
+          $response->setResponseHttpCode($status);
+          $response->setResponseHeaders($partHeaders);
+          $response->setResponseBody($partBody);
 
           // Need content id.
-          $key = $headers['content-id'];
-          $class = '';
-          if (!empty($this->expected_classes[$key])) {
+          $key = $metaHeaders['content-id'];
+
+          if (isset($this->expected_classes[$key]) &&
+              strlen($this->expected_classes[$key]) > 0) {
             $class = $this->expected_classes[$key];
+            $response->setExpectedClass($class);
           }
 
           try {
             $response = Google_Http_REST::decodeHttpResponse($response);
-            if (isset($classes[$key])) {
-              $response = new $classes[$key]($response);
-            }
+            $responses[$key] = $response;
           } catch (Google_Service_Exception $e) {
-            // Store the exception as the response, so successful responses
+            // Store the exception as the response, so succesful responses
             // can be processed.
-            $response = $e;
+            $responses[$key] = $e;
           }
-
-          $responses[$key] = $response;
         }
       }
 
@@ -179,63 +139,5 @@ EOF;
     }
 
     return null;
-  }
-
-  private function parseRawHeaders($rawHeaders)
-  {
-    $headers = array();
-    $responseHeaderLines = explode("\r\n", $rawHeaders);
-    foreach ($responseHeaderLines as $headerLine) {
-      if ($headerLine && strpos($headerLine, ':') !== false) {
-        list($header, $value) = explode(': ', $headerLine, 2);
-        $header = strtolower($header);
-        if (isset($headers[$header])) {
-          $headers[$header] .= "\n" . $value;
-        } else {
-          $headers[$header] = $value;
-        }
-      }
-    }
-    return $headers;
-  }
-
-  /**
-   * Used by the IO lib and also the batch processing.
-   *
-   * @param $respData
-   * @param $headerSize
-   * @return array
-   */
-  private function parseHttpResponse($respData, $headerSize)
-  {
-    // check proxy header
-    foreach (self::$CONNECTION_ESTABLISHED_HEADERS as $established_header) {
-      if (stripos($respData, $established_header) !== false) {
-        // existed, remove it
-        $respData = str_ireplace($established_header, '', $respData);
-        // Subtract the proxy header size unless the cURL bug prior to 7.30.0
-        // is present which prevented the proxy header size from being taken into
-        // account.
-        // @TODO look into this
-        // if (!$this->needsQuirk()) {
-        //   $headerSize -= strlen($established_header);
-        // }
-        break;
-      }
-    }
-
-    if ($headerSize) {
-      $responseBody = substr($respData, $headerSize);
-      $responseHeaders = substr($respData, 0, $headerSize);
-    } else {
-      $responseSegments = explode("\r\n\r\n", $respData, 2);
-      $responseHeaders = $responseSegments[0];
-      $responseBody = isset($responseSegments[1]) ? $responseSegments[1] :
-                                                    null;
-    }
-
-    $responseHeaders = $this->parseRawHeaders($responseHeaders);
-
-    return array($responseHeaders, $responseBody);
   }
 }

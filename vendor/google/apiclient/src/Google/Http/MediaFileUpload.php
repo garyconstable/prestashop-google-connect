@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
-use GuzzleHttp\Message\Request;
-use GuzzleHttp\Stream\Stream;
-use GuzzleHttp\Url;
+require_once 'Google/Client.php';
+require_once 'Google/Exception.php';
+require_once 'Google/Http/Request.php';
+require_once 'Google/Http/REST.php';
+require_once 'Google/Utils.php';
 
 /**
- * Manage large file uploads, which may be media but can be any type
- * of sizable data.
+ * @author Chirag Shah <chirags@google.com>
+ *
  */
 class Google_Http_MediaFileUpload
 {
@@ -74,20 +76,27 @@ class Google_Http_MediaFileUpload
    */
   public function __construct(
       Google_Client $client,
-      $request,
+      Google_Http_Request $request,
       $mimeType,
       $data,
       $resumable = false,
-      $chunkSize = false
+      $chunkSize = false,
+      $boundary = false
   ) {
     $this->client = $client;
     $this->request = $request;
     $this->mimeType = $mimeType;
     $this->data = $data;
+    $this->size = strlen($this->data);
     $this->resumable = $resumable;
+    if (!$chunkSize) {
+      $chunkSize = 256 * 1024;
+    }
     $this->chunkSize = $chunkSize;
     $this->progress = 0;
+    $this->boundary = $boundary;
 
+    // Process Media Request
     $this->process();
   }
 
@@ -110,36 +119,6 @@ class Google_Http_MediaFileUpload
   }
 
   /**
-   * Send the next part of the file to upload.
-   * @param [$chunk] the next set of bytes to send. If false will used $data passed
-   * at construct time.
-   */
-  public function nextChunk($chunk = false)
-  {
-    $resumeUri = $this->getResumeUri();
-
-    if (false == $chunk) {
-      $chunk = substr($this->data, $this->progress, $this->chunkSize);
-    }
-
-    $lastBytePos = $this->progress + strlen($chunk) - 1;
-    $headers = array(
-      'content-range' => "bytes $this->progress-$lastBytePos/$this->size",
-      'content-length' => strlen($chunk),
-      'expect' => '',
-    );
-
-    $request = new Request(
-        'PUT',
-        $resumeUri,
-        $headers,
-        Stream::factory($chunk)
-    );
-
-    return $this->makePutRequest($request);
-  }
-
-  /**
    * Return the HTTP result code from the last call made.
    * @return int code
    */
@@ -149,84 +128,84 @@ class Google_Http_MediaFileUpload
   }
 
   /**
-  * Sends a PUT-Request to google drive and parses the response,
-  * setting the appropiate variables from the response()
-  *
-  * @param Google_Http_Request $httpRequest the Reuqest which will be send
-  *
-  * @return false|mixed false when the upload is unfinished or the decoded http response
-  *
-  */
-  private function makePutRequest(Request $request)
+   * Send the next part of the file to upload.
+   * @param [$chunk] the next set of bytes to send. If false will used $data passed
+   * at construct time.
+   */
+  public function nextChunk($chunk = false)
   {
-    $http = $this->client->getHttpClient();
-    $response = $http->send($request);
-    $this->httpResultCode = $response->getStatusCode();
+    if (false == $this->resumeUri) {
+      $this->resumeUri = $this->getResumeUri();
+    }
 
-    if (308 == $this->httpResultCode) {
+    if (false == $chunk) {
+      $chunk = substr($this->data, $this->progress, $this->chunkSize);
+    }
+
+    $lastBytePos = $this->progress + strlen($chunk) - 1;
+    $headers = array(
+      'content-range' => "bytes $this->progress-$lastBytePos/$this->size",
+      'content-type' => $this->request->getRequestHeader('content-type'),
+      'content-length' => $this->chunkSize,
+      'expect' => '',
+    );
+
+    $httpRequest = new Google_Http_Request(
+        $this->resumeUri,
+        'PUT',
+        $headers,
+        $chunk
+    );
+
+    if ($this->client->getClassConfig("Google_Http_Request", "enable_gzip_for_uploads")) {
+      $httpRequest->enableGzip();
+    } else {
+      $httpRequest->disableGzip();
+    }
+
+    $response = $this->client->getIo()->makeRequest($httpRequest);
+    $response->setExpectedClass($this->request->getExpectedClass());
+    $code = $response->getResponseHttpCode();
+    $this->httpResultCode = $code;
+
+    if (308 == $code) {
       // Track the amount uploaded.
-      $range = explode('-', $response->getHeader('range'));
+      $range = explode('-', $response->getResponseHeader('range'));
       $this->progress = $range[1] + 1;
 
       // Allow for changing upload URLs.
-      $location = $response->getHeader('location');
+      $location = $response->getResponseHeader('location');
       if ($location) {
         $this->resumeUri = $location;
       }
 
       // No problems, but upload not complete.
       return false;
+    } else {
+      return Google_Http_REST::decodeHttpResponse($response);
     }
-
-    $result = $response->json();
-    $expectedClass = $this->request->getHeader('X-Php-Expected-Class');
-
-    if ($expectedClass) {
-      $result = new $expectedClass($result);
-    }
-
-    return $result;
   }
 
   /**
-   * Resume a previously unfinished upload
-   * @param $resumeUri the resume-URI of the unfinished, resumable upload.
-   */
-  public function resume($resumeUri)
-  {
-     $this->resumeUri = $resumeUri;
-     $headers = array(
-       'content-range' => "bytes */$this->size",
-       'content-length' => 0,
-     );
-     $httpRequest = new Google_Http_Request(
-         $this->resumeUri,
-         'PUT',
-         $headers
-     );
-
-     return $this->makePutRequest($httpRequest);
-  }
-
-  /**
+   * @param $meta
+   * @param $params
    * @return array|bool
    * @visible for testing
    */
   private function process()
   {
-    $this->transformToUploadUrl();
-
-    $postBody = '';
+    $postBody = false;
     $contentType = false;
 
-    $meta = (string) $this->request->getBody();
+    $meta = $this->request->getPostBody();
     $meta = is_string($meta) ? json_decode($meta, true) : $meta;
 
     $uploadType = $this->getUploadType($meta);
-    $this->request->getQuery()->set('uploadType', $uploadType);
+    $this->request->setQueryParam('uploadType', $uploadType);
+    $this->transformToUploadUrl();
     $mimeType = $this->mimeType ?
         $this->mimeType :
-        $this->request->getHeader('content-type');
+        $this->request->getRequestHeader('content-type');
 
     if (self::UPLOAD_RESUMABLE_TYPE == $uploadType) {
       $contentType = $mimeType;
@@ -250,13 +229,18 @@ class Google_Http_MediaFileUpload
       $postBody = $related;
     }
 
-    $this->request->setBody(Stream::factory($postBody));
+    $this->request->setPostBody($postBody);
 
     if (isset($contentType) && $contentType) {
-      $this->request->setHeader('content-type', $contentType);
+      $contentTypeHeader['content-type'] = $contentType;
+      $this->request->setRequestHeaders($contentTypeHeader);
     }
+  }
 
-    return $this->request;
+  private function transformToUploadUrl()
+  {
+    $base = $this->request->getBaseComponent();
+    $this->request->setBaseComponent($base . '/upload');
   }
 
   /**
@@ -281,69 +265,37 @@ class Google_Http_MediaFileUpload
     return self::UPLOAD_MULTIPART_TYPE;
   }
 
-  public function getResumeUri()
-  {
-    if (is_null($this->resumeUri)) {
-      $this->resumeUri = $this->fetchResumeUri();
-    }
-
-    return $this->resumeUri;
-  }
-
-  private function fetchResumeUri()
+  private function getResumeUri()
   {
     $result = null;
-    $body = $this->request->getBody();
+    $body = $this->request->getPostBody();
     if ($body) {
       $headers = array(
         'content-type' => 'application/json; charset=UTF-8',
-        'content-length' => $body->getSize(),
+        'content-length' => Google_Utils::getStrLen($body),
         'x-upload-content-type' => $this->mimeType,
         'x-upload-content-length' => $this->size,
         'expect' => '',
       );
-      foreach ($headers as $key => $value) {
-        $this->request->setHeader($key, $value);
-      }
+      $this->request->setRequestHeaders($headers);
     }
 
-    $response = $this->client->getHttpClient()->send($this->request);
-    $location = $response->getHeader('location');
-    $code = $response->getStatusCode();
+    $response = $this->client->getIo()->makeRequest($this->request);
+    $location = $response->getResponseHeader('location');
+    $code = $response->getResponseHttpCode();
 
     if (200 == $code && true == $location) {
       return $location;
     }
-
     $message = $code;
-    $body = $response->json();
-    if (isset($body['error']['errors'])) {
+    $body = @json_decode($response->getResponseBody());
+    if (!empty( $body->error->errors ) ) {
       $message .= ': ';
-      foreach ($body['error']['errors'] as $error) {
-        $message .= "{$error[domain]}, {$error[message]};";
+      foreach ($body->error->errors as $error) {
+        $message .= "{$error->domain}, {$error->message};";
       }
       $message = rtrim($message, ';');
     }
-
-    $error = "Failed to start the resumable upload (HTTP {$message})";
-    $this->client->getLogger()->error($error);
-
-    throw new Google_Exception($error);
-  }
-
-  private function transformToUploadUrl()
-  {
-    $parts = parse_url($this->request->getUrl());
-    if (!isset($parts['path'])) {
-      $parts['path'] = '';
-    }
-    $parts['path'] = '/upload' . $parts['path'];
-    $url = Url::fromString(Url::buildUrl($parts));
-    $this->request->setUrl($url);
-  }
-
-  public function setChunkSize($chunkSize)
-  {
-    $this->chunkSize = $chunkSize;
+    throw new Google_Exception("Failed to start the resumable upload (HTTP {$message})");
   }
 }
