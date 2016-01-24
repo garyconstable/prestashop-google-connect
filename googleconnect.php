@@ -185,8 +185,7 @@ class GoogleConnect extends Module
                 )
             ),
             'submit' => array(
-                'title' => $this->l('Save'),
-                'class' => 'button'
+                'title' => $this->l('Save')
             )
         );
 

@@ -109,20 +109,20 @@ class ConnectCustomer
         
         //gen sql
         $sql = 'insert into `'._DB_PREFIX_.'customer` SET 
-        id_gender = '.$gender.', id_default_group = '.$id_default_group.',
-        firstname = \''.$firstname.'\', lastname = \''.$lastname.'\',
-        email = \''.$email.'\', passwd = \''.$passwd.'\',
-        last_passwd_gen = \''.$last_passwd_gen.'\',
-        secure_key = \''.$secure_key.'\', active = '.$active.',
-        date_add = \''.$date_add.'\', date_upd = \''.$date_upd.'\', optin = 1 ';
+        id_gender = '.(int)$gender.', id_default_group = '.(int)$id_default_group.',
+        firstname = \''.pSQL($firstname).'\', lastname = \''.pSQL($lastname).'\',
+        email = \''.pSQL($email).'\', passwd = \''.pSQL($passwd).'\',
+        last_passwd_gen = \''.pSQL($last_passwd_gen).'\',
+        secure_key = \''.pSQL($secure_key).'\', active = '.(int)$active.',
+        date_add = \''.pSQL($date_add).'\', date_upd = \''.pSQL($date_upd).'\', optin = 1 ';
         
         //make the insert and return the last id
         Db::getInstance()->Execute($sql);
         $insert_id = Db::getInstance()->Insert_ID();
         
         $sql = 'INSERT into `'._DB_PREFIX_.'customer_group` SET '
-                . 'id_customer = '.$insert_id.', id_group = '.
-                $id_default_group.' ';
+                . 'id_customer = '.(int)$insert_id.', id_group = '.
+                (int)$id_default_group.' ';
         Db::getInstance()->Execute($sql);
         
         // auth customer
