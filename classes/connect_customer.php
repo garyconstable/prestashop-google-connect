@@ -109,7 +109,7 @@ class ConnectCustomer
         
         //gen sql
         $sql = 'insert into `'._DB_PREFIX_.'customer` SET 
-        id_gender = '.int($gender).', id_default_group = '.(int)$id_default_group.',
+        id_gender = '.(int)$gender.', id_default_group = '.(int)$id_default_group.',
         firstname = \''.pSQL($firstname).'\', lastname = \''.pSQL($lastname).'\',
         email = \''.pSQL($email).'\', passwd = \''.pSQL($passwd).'\',
         last_passwd_gen = \''.pSQL($last_passwd_gen).'\',
